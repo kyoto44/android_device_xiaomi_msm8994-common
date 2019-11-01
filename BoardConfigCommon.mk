@@ -163,7 +163,6 @@ BOARD_USES_QC_TIME_SERVICES := true
 
 # Ril
 FEATURE_QCRIL_UIM_SAP_SERVER_MODE := true
-TARGET_RIL_VARIANT := caf
 TARGET_USES_OLD_MNC_FORMAT := true
 
 # Remove secdiscard command
