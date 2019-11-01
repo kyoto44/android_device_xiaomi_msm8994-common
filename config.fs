@@ -25,6 +25,12 @@ user: AID_SYSTEM
 group: AID_SYSTEM
 caps: NET_BIND_SERVICE
 
+[vendor/bin/mm-qcamera-daemon]
+mode: 0700
+user: AID_CAMERA
+group: AID_SHELL
+caps: SYS_NICE
+
 [firmware/]
 mode: 0771
 user: AID_SYSTEM
