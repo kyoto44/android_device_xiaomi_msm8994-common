@@ -38,10 +38,6 @@ BOARD_USE_LEGACY_UI := false
 TARGET_KEYMASTER_WAIT_FOR_QSEE := true
 TARGET_PROVIDES_KEYMASTER := true
 
-# GPS
-USE_DEVICE_SPECIFIC_GPS := true
-USE_DEVICE_SPECIFIC_LOC_API := true
-
 # Audio
 BOARD_USES_ALSA_AUDIO := true
 BOARD_SUPPORTS_SOUND_TRIGGER := true
@@ -111,7 +107,6 @@ BOARD_ROOT_EXTRA_SYMLINKS := \
 TARGET_PLATFORM_DEVICE_BASE := /devices/soc.0/
 
 # Camera
-USE_DEVICE_SPECIFIC_CAMERA := true
 # Force camera module to be compiled only in 32-bit mode on 64-bit systems
 # Once camera module can run in the native mode of the system (either
 # 32-bit or 64-bit), the following line should be deleted
