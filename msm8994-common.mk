@@ -1,8 +1,5 @@
 $(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
 
-# Get non-open-source specific aspects
-$(call inherit-product-if-exists, vendor/xiaomi/msm8994-common/msm8994-common-vendor.mk)
-
 # System properties
 -include $(LOCAL_PATH)/system_prop.mk
 
@@ -251,8 +248,9 @@ PRODUCT_PACKAGES += \
 
 # Vibrator
 PRODUCT_PACKAGES += \
-    android.hardware.vibrator@1.0-service.lineage
-
+    android.hardware.vibrator@1.0-impl \
+    android.hardware.vibrator@1.0-service
+    
 # Wifi
 PRODUCT_PACKAGES += \
     android.hardware.wifi@1.0-service \
