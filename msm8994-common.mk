@@ -173,6 +173,8 @@ PRODUCT_PACKAGES += \
     libmmcamera_interface2 \
     libmmjpeg_interface \
     libqomx_core \
+    libshim_atomic \
+    libshim_camera \
     mm-qcamera-app
 
 # Keystore
