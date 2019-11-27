@@ -762,7 +762,7 @@ const QCameraParameters::QCameraMap<int>
  *==========================================================================*/
 QCameraParameters::QCameraParameters()
     : CameraParameters(),
-      m_reprocScaleParam(),
+      m_reprocScaleParam(this),
       m_pCapability(NULL),
       m_pCamOpsTbl(NULL),
       m_pParamHeap(NULL),
@@ -871,7 +871,7 @@ QCameraParameters::QCameraParameters()
  *==========================================================================*/
 QCameraParameters::QCameraParameters(const String8 &params)
     : CameraParameters(params),
-    m_reprocScaleParam(),
+    m_reprocScaleParam(this),
     m_pCapability(NULL),
     m_pCamOpsTbl(NULL),
     m_pParamHeap(NULL),
@@ -6707,7 +6707,7 @@ int32_t QCameraParameters::configFrameCapture(bool commitSettings)
  *==========================================================================*/
 int32_t QCameraParameters::resetFrameCapture(bool commitSettings)
 {
-    int32_t rc = NO_ERROR;
+    int32_t rc = NO_ERROR, i = 0;
     memset(&m_captureFrameConfig, 0, sizeof(cam_capture_frame_config_t));
 
     if (commitSettings) {
@@ -10607,9 +10607,11 @@ int32_t QCameraParameters::commitParamChanges()
  *
  * RETURN     : none
  *==========================================================================*/
-QCameraReprocScaleParam::QCameraReprocScaleParam()
-  : mScaleEnabled(false),
+QCameraReprocScaleParam::QCameraReprocScaleParam(QCameraParameters *parent)
+  : mParent(parent),
+    mScaleEnabled(false),
     mIsUnderScaling(false),
+    mScaleDirection(0),
     mNeedScaleCnt(0),
     mSensorSizeTblCnt(0),
     mSensorSizeTbl(NULL),

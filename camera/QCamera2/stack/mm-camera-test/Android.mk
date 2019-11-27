@@ -5,8 +5,6 @@ LOCAL_PATH:=$(call my-dir)
 include $(LOCAL_PATH)/../../../common.mk
 include $(CLEAR_VARS)
 
-# b/24171136 many files not compiling with clang/llvm yet
-LOCAL_CLANG := true
 LOCAL_CXX_STL := none
 
 LOCAL_CFLAGS:= \
@@ -101,7 +99,7 @@ else
         LOCAL_CFLAGS += -DCAMERA_ION_FALLBACK_HEAP_ID=ION_CAMERA_HEAP_ID
         LOCAL_CFLAGS += -DNUM_RECORDING_BUFFERS=5
 endif
-LOCAL_CFLAGS += -Wall -Wextra -Werror
+LOCAL_CFLAGS += -Wall -Wextra -Werror -Wno-error -Wno-sign-conversion -Wno-unused-value -Wno-pointer-bool-conversion
 
 LOCAL_SHARED_LIBRARIES:= \
          liblog libcutils libdl libmmcamera_interface
@@ -117,8 +115,6 @@ include $(BUILD_EXECUTABLE)
 # Build tuning library
 include $(CLEAR_VARS)
 
-# b/24171136 many files not compiling with clang/llvm yet
-LOCAL_CLANG := true
 LOCAL_CXX_STL := none
 
 LOCAL_CFLAGS:= \
@@ -216,7 +212,7 @@ endif
 LOCAL_CFLAGS += -Wall -Wextra -Werror
 
 LOCAL_SHARED_LIBRARIES:= \
-         liblog libcutils libdl libmmcamera_interface
+         libcutils libdl libmmcamera_interface liblog
 
 LOCAL_MODULE_TAGS := optional
 
