@@ -163,14 +163,17 @@ PRODUCT_PACKAGES += \
     ebtables \
     ethertypes
 
-# Camera
 PRODUCT_PACKAGES += \
-    camera.$(BOARD_PLATFORM) \
-    camera.device@1.0-impl \
+    camera.device@3.2-impl \
     android.hardware.camera.provider@2.4-impl \
-    libshim_atomic \
-    libshim_camera \
-    Snap
+    android.hardware.camera.provider@2.4-service \
+    camera.msm8992 \
+    libcamera \
+    libmmcamera_interface \
+    libmmcamera_interface2 \
+    libmmjpeg_interface \
+    libqomx_core \
+    mm-qcamera-app
 
 # Keystore
 PRODUCT_PACKAGES += \
