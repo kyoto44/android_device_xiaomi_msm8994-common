@@ -114,10 +114,11 @@ PRODUCT_PACKAGES += \
 
 # Camera
 PRODUCT_PACKAGES += \
+    camera.$(BOARD_PLATFORM) \
+    camera.device@1.0-impl \
     android.hardware.camera.provider@2.4-impl \
-    camera.msm8992 \
     libshim_atomic \
-    sensors.hal.tof \
+    libshim_camera \
     Snap 
 
 # Connectivity Engine support (CNE)
@@ -178,8 +179,11 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     android.hardware.drm@1.0-impl \
     android.hardware.drm@1.0-service \
-    android.hardware.drm@1.2-service.clearkey \
-    android.hardware.drm@1.2-service.widevine
+    android.hardware.drm@1.1-service.clearkey
+
+# Widevine
+PRODUCT_PACKAGES += \
+    android.hardware.drm@1.0-service.widevine    
 
 # OMX
 PRODUCT_PACKAGES += \
