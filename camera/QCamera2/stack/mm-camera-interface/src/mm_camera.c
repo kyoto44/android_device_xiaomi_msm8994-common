@@ -43,7 +43,6 @@
 #include "mm_camera_sock.h"
 #include "mm_camera_interface.h"
 #include "mm_camera.h"
-#include "cam_cond.h"
 
 #define SET_PARM_BIT32(parm, parm_arr) \
     (parm_arr[parm/32] |= (1<<(parm%32)))
@@ -250,7 +249,7 @@ int32_t mm_camera_open(mm_camera_obj_t *my_obj)
 {
     char dev_name[MM_CAMERA_DEV_NAME_LEN];
     int32_t rc = 0;
-    int8_t n_try=MM_CAMERA_DEV_OPEN_TRIES;
+    int32_t n_try=MM_CAMERA_DEV_OPEN_TRIES;
     uint8_t sleep_msec=MM_CAMERA_DEV_OPEN_RETRY_SLEEP;
     int cam_idx = 0;
     const char *dev_name_value = NULL;
@@ -291,14 +290,8 @@ int32_t mm_camera_open(mm_camera_obj_t *my_obj)
         errno = 0;
         my_obj->ctrl_fd = open(dev_name, O_RDWR | O_NONBLOCK);
         CDBG("%s:  ctrl_fd = %d, errno == %d", __func__, my_obj->ctrl_fd, errno);
-        if((my_obj->ctrl_fd >= 0) ||
-                (errno != EIO && errno != ETIMEDOUT && errno != ENODEV) ||
-                (n_try <= 0 )) {
+        if((my_obj->ctrl_fd >= 0) || (errno != EIO && errno != ETIMEDOUT) || (n_try <= 0 )) {
             CDBG_HIGH("%s:  opened, break out while loop", __func__);
-            if (my_obj->ctrl_fd < 0) {
-                    ALOGE("%s: Failed to open %s: %s(%d).", __func__, dev_name,
-                            strerror(-errno), errno);
-            }
             break;
         }
         ALOGE("%s:Failed with %s error, retrying after %d milli-seconds",
@@ -341,7 +334,7 @@ int32_t mm_camera_open(mm_camera_obj_t *my_obj)
 
     pthread_mutex_init(&my_obj->cb_lock, NULL);
     pthread_mutex_init(&my_obj->evt_lock, NULL);
-    PTHREAD_COND_INIT(&my_obj->evt_cond);
+    pthread_cond_init(&my_obj->evt_cond, NULL);
 
     CDBG("%s : Launch evt Thread in Cam Open",__func__);
     snprintf(my_obj->evt_thread.threadName, THREAD_NAME_SIZE, "CAM_Dispatch");
@@ -1714,7 +1707,7 @@ void mm_camera_util_wait_for_event(mm_camera_obj_t *my_obj,
 
     pthread_mutex_lock(&my_obj->evt_lock);
     while (!(my_obj->evt_rcvd.server_event_type & evt_mask)) {
-        clock_gettime(CLOCK_MONOTONIC, &ts);
+        clock_gettime(CLOCK_REALTIME, &ts);
         ts.tv_sec += WAIT_TIMEOUT;
         rc = pthread_cond_timedwait(&my_obj->evt_cond, &my_obj->evt_lock, &ts);
         if (rc == ETIMEDOUT) {

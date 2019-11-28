@@ -41,28 +41,12 @@ namespace qcamera {
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
-#define IS_USAGE_VIDEO(usage)  (((usage) & (GRALLOC_USAGE_HW_VIDEO_ENCODER)) \
-                         == GRALLOC_USAGE_HW_VIDEO_ENCODER)
-#define IS_USAGE_PREVIEW(usage) (((usage) & (GRALLOC_USAGE_HW_TEXTURE)) \
-                         == GRALLOC_USAGE_HW_TEXTURE)
-#define IS_USAGE_ZSL(usage)  (((usage) & (GRALLOC_USAGE_HW_CAMERA_ZSL)) \
-        == (GRALLOC_USAGE_HW_CAMERA_ZSL))
-
 class QCamera3Channel;
-class QCamera3ProcessingChannel;
 
     typedef enum {
         INVALID,
         VALID,
     } stream_status_t;
-
-    typedef enum {
-       REPROCESS_TYPE_NONE,
-       REPROCESS_TYPE_JPEG,
-       REPROCESS_TYPE_YUV,
-       REPROCESS_TYPE_PRIVATE,
-       REPROCESS_TYPE_RAW
-    } reprocess_type_t;
 
     typedef struct {
         uint32_t out_buf_index;
@@ -75,8 +59,6 @@ class QCamera3ProcessingChannel;
         uint8_t gps_coordinates_valid;
         double gps_coordinates[3];
         char gps_processing_method[GPS_PROCESSING_METHOD_SIZE];
-        uint8_t image_desc_valid;
-        char image_desc[EXIF_IMAGE_DESCRIPTION_SIZE];
     } jpeg_settings_t;
 
     typedef struct {
@@ -91,10 +73,15 @@ class QCamera3ProcessingChannel;
         cam_stream_buf_plane_info_t input_stream_plane_info;
         cam_dimension_t output_stream_dim;
         cam_padding_info_t *padding;
-        reprocess_type_t reprocess_type;
-        QCamera3ProcessingChannel *src_channel;
+        QCamera3Channel *src_channel;
     } reprocess_config_t;
 
+    //Extended scene mode is scene mode defined by Android by not by
+    //cam_scene_mode_type. One such example is HIGH_SPEED_VIDEO scene mode.
+    typedef enum {
+        CAM_EXT_SCENE_MODE_HSV = 0,
+        CAM_EXT_SCENE_MODE_MAX
+    } cam_ext_scene_mode_type;
 };//namespace qcamera
 
 #endif

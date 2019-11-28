@@ -34,7 +34,6 @@
 #include "utils/Mutex.h"
 #include "QCameraCmdThread.h"
 #include "QCamera3Mem.h"
-#include "QCamera3StreamMem.h"
 
 extern "C" {
 #include <mm_camera_interface.h>
@@ -61,12 +60,10 @@ public:
     virtual int32_t init(cam_stream_type_t streamType,
                          cam_format_t streamFormat,
                          cam_dimension_t streamDim,
-                         cam_rotation_t streamRotation,
                          cam_stream_reproc_config_t* reprocess_config,
                          uint8_t minStreamBufNum,
                          uint32_t postprocess_mask,
                          cam_is_type_t is_type,
-                         uint32_t batchSize,
                          hal3_stream_cb_routine stream_cb,
                          void *userdata);
     virtual int32_t bufDone(uint32_t index);
@@ -74,7 +71,6 @@ public:
     virtual int32_t processDataNotify(mm_camera_super_buf_t *bufs);
     virtual int32_t start();
     virtual int32_t stop();
-    virtual int32_t queueBatchBuf();
 
     static void dataNotifyCB(mm_camera_super_buf_t *recvd_frame, void *userdata);
     static void *dataProcRoutine(void *data);
@@ -83,7 +79,7 @@ public:
     int32_t getFrameOffset(cam_frame_len_offset_t &offset);
     int32_t getFrameDimension(cam_dimension_t &dim);
     int32_t getFormat(cam_format_t &fmt);
-    QCamera3StreamMem *getStreamBufs() {return mStreamBufs;};
+    QCamera3Memory *getStreamBufs() {return mStreamBufs;};
     uint32_t getMyServerID();
 
     int32_t mapBuf(uint8_t buf_type, uint32_t buf_idx,
@@ -109,22 +105,12 @@ private:
     QCameraCmdThread mProcTh; // thread for dataCB
 
     QCamera3HeapMemory *mStreamInfoBuf;
-    QCamera3StreamMem *mStreamBufs;
+    QCamera3Memory *mStreamBufs;
     mm_camera_buf_def_t *mBufDefs;
     cam_frame_len_offset_t mFrameLenOffset;
     cam_padding_info_t mPaddingInfo;
     QCamera3Channel *mChannel;
     Mutex mLock;    //Lock controlling access to 'mBufDefs'
-
-    uint32_t mBatchSize; // 0: No batch, non-0: Number of imaage bufs in a batch
-    uint8_t mNumBatchBufs; //Number of batch buffers which can hold image bufs
-    QCamera3HeapMemory *mStreamBatchBufs; //Pointer to batch buffers memory
-    mm_camera_buf_def_t *mBatchBufDefs; //Pointer to array of batch bufDefs
-    mm_camera_buf_def_t *mCurrentBatchBufDef; //batch buffer in progress during
-                                              //aggregation
-    uint32_t    mBufsStaged; //Number of image buffers aggregated into
-                             //currentBatchBufDef
-    QCameraQueue mFreeBatchBufQ; //Buffer queue containing empty batch buffers
 
     static int32_t get_bufs(
                      cam_frame_len_offset_t *offset,
@@ -147,16 +133,7 @@ private:
     int32_t putBufs(mm_camera_map_unmap_ops_tbl_t *ops_tbl);
     int32_t invalidateBuf(uint32_t index);
     int32_t cleanInvalidateBuf(uint32_t index);
-    int32_t getBatchBufs(
-            uint8_t *num_bufs, uint8_t **initial_reg_flag,
-            mm_camera_buf_def_t **bufs,
-            mm_camera_map_unmap_ops_tbl_t *ops_tbl);
-    int32_t putBatchBufs(mm_camera_map_unmap_ops_tbl_t *ops_tbl);
-    int32_t getBatchBufDef(mm_camera_buf_def_t& batchBufDef,
-            int32_t index);
-    int32_t aggregateBufToBatch(mm_camera_buf_def_t& bufDef);
-    int32_t handleBatchBuffer(mm_camera_super_buf_t *superBuf);
-    void flushFreeBatchBufQ();
+
 };
 
 }; // namespace qcamera

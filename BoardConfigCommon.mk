@@ -125,7 +125,7 @@ TARGET_PROCESS_SDK_VERSION_OVERRIDE := \
 # Charger
 BOARD_CHARGER_ENABLE_SUSPEND := true
 
-# Dex
+# Dexpreopt
 ifeq ($(HOST_OS),linux)
   ifneq ($(TARGET_BUILD_VARIANT),eng)
     WITH_DEXPREOPT ?= true

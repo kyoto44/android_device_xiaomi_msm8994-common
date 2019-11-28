@@ -58,6 +58,7 @@ QCamera2Factory *gQCamera2Factory = NULL;
  *==========================================================================*/
 QCamera2Factory::QCamera2Factory()
 {
+    camera_info info;
     mHalDescriptors = NULL;
     mCallbacks = NULL;
     mNumOfCameras = get_num_of_cameras();
@@ -77,6 +78,10 @@ QCamera2Factory::QCamera2Factory()
                 } else {
                     mHalDescriptors[i].device_version = CAMERA_DEVICE_API_VERSION_1_0;
                 }
+                //Query camera at this point in order
+                //to avoid any delays during subsequent
+                //calls to 'getCameraInfo()'
+                getCameraInfo(i, &info);
             }
         } else {
             ALOGE("%s: Not enough resources to allocate HAL descriptor table!",
@@ -245,19 +250,18 @@ int QCamera2Factory::getCameraInfo(int camera_id, struct camera_info *info)
         return NO_INIT;
     }
 
-    if ( mHalDescriptors[camera_id].device_version == CAMERA_DEVICE_API_VERSION_3_0 ) {
-        rc = QCamera3HardwareInterface::getCamInfo(mHalDescriptors[camera_id].cameraId, info);
-    } else if (mHalDescriptors[camera_id].device_version == CAMERA_DEVICE_API_VERSION_1_0) {
-        rc = QCamera2HardwareInterface::getCapabilities(mHalDescriptors[camera_id].cameraId, info);
-    } else {
-        ALOGE("%s: Device version for camera id %d invalid %d",
-              __func__,
-              camera_id,
-              mHalDescriptors[camera_id].device_version);
-        return BAD_VALUE;
+    ALOGI("Camera id %d API version %d",
+            camera_id, mHalDescriptors[camera_id].device_version);
+
+    // Need ANDROID_FLASH_INFO_AVAILABLE property for flashlight widget to
+    // work and so get the static data regardless of HAL version
+    rc = QCamera3HardwareInterface::getCamInfo(
+            mHalDescriptors[camera_id].cameraId, info);
+    if (mHalDescriptors[camera_id].device_version ==
+            CAMERA_DEVICE_API_VERSION_1_0) {
+        info->device_version = CAMERA_DEVICE_API_VERSION_1_0;
     }
 
-    ALOGV("%s: X", __func__);
     return rc;
 }
 
@@ -374,7 +378,7 @@ int QCamera2Factory::camera_device_open(
 }
 
 struct hw_module_methods_t QCamera2Factory::mModuleMethods = {
-    open: QCamera2Factory::camera_device_open,
+    .open = QCamera2Factory::camera_device_open,
 };
 
 /*===========================================================================

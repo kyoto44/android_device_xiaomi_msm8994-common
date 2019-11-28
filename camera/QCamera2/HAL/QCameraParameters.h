@@ -84,10 +84,8 @@ private:
     size_t checkScaleSizeTable(size_t scale_cnt, cam_dimension_t *scale_tbl,
             size_t org_cnt, cam_dimension_t *org_tbl);
 
-    QCameraParameters *mParent;
     bool mScaleEnabled;
     bool mIsUnderScaling;   //if in scale status
-    bool mScaleDirection;   // 0: Upscaling; 1: Downscaling
 
     // picture size cnt that need scale operation
     size_t mNeedScaleCnt;
@@ -427,6 +425,7 @@ public:
     static const char ISO_800[];
     static const char ISO_1600[];
     static const char ISO_3200[];
+    static const char ISO_6400[];
     static const char ISO_MANUAL[];
 
     // Values for auto exposure settings.
@@ -561,6 +560,9 @@ public:
     static const char VIDEO_ROTATION_180[];
     static const char VIDEO_ROTATION_270[];
 
+    //param key for HFR batch size
+    static const char KEY_QC_VIDEO_BATCH_SIZE[];
+
     enum {
         CAMERA_ORIENTATION_UNKNOWN = 0,
         CAMERA_ORIENTATION_PORTRAIT = 1,
@@ -666,6 +668,7 @@ public:
     uint8_t getMobicatMask();
 
     cam_focus_mode_type getFocusMode() const {return mFocusMode;};
+    bool isAFRunning();
     int32_t setNumOfSnapshot();
     int32_t adjustPreviewFpsRange(cam_fps_range_t *fpsRange);
     bool isJpegPictureFormat() {return (mPictureFormat == CAM_FORMAT_JPEG);};
@@ -776,7 +779,8 @@ public:
             { return m_captureFrameConfig; };
     void setJpegRotation(int rotation);
     uint32_t getJpegRotation() { return mJpegRotation;};
-
+    void setFocusState(cam_autofocus_state_t focusState) { mFocusState = focusState; };
+    cam_autofocus_state_t getFocusState() { return mFocusState; };
 private:
     int32_t setPreviewSize(const QCameraParameters& );
     int32_t setVideoSize(const QCameraParameters& );
@@ -1060,6 +1064,7 @@ private:
 
     uint32_t mRotation;
     uint32_t mJpegRotation;
+    cam_autofocus_state_t mFocusState;
 };
 
 }; // namespace qcamera

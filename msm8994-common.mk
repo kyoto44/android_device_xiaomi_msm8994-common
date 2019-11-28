@@ -6,9 +6,6 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
 DEVICE_PACKAGE_OVERLAYS += \
     $(LOCAL_PATH)/overlay 
 
-PRODUCT_ENFORCE_RRO_TARGETS := \
-    framework-res
-
 # Media
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/media/media_profiles_V1_0.xml:system/vendor/etc/media_profiles_V1_0.xml \
@@ -107,14 +104,21 @@ PRODUCT_PACKAGES += \
     libaudio-resampler \
     libqcompostprocbundle \
     libqcomvisualizer \
-    libqcomvoiceprocessing \
-    tinymix
+    libqcomvoiceprocessing 
 
 # Bluetooth
 PRODUCT_PACKAGES += \
     bdaddr_xiaomi \
     libbt-vendor \
     android.hardware.bluetooth@1.0-impl
+
+# Camera
+PRODUCT_PACKAGES += \
+    android.hardware.camera.provider@2.4-impl \
+    camera.msm8992 \
+    libshim_atomic \
+    sensors.hal.tof \
+    Snap 
 
 # Connectivity Engine support (CNE)
 PRODUCT_PACKAGES += \
@@ -158,25 +162,6 @@ PRODUCT_PACKAGES += \
     android.hardware.memtrack@1.0-impl \
     android.hardware.graphics.composer@2.1-impl
 
-# IPv6
-PRODUCT_PACKAGES += \
-    ebtables \
-    ethertypes
-
-PRODUCT_PACKAGES += \
-    camera.device@3.2-impl \
-    android.hardware.camera.provider@2.4-impl \
-    android.hardware.camera.provider@2.4-service \
-    camera.msm8992 \
-    libcamera \
-    libmmcamera_interface \
-    libmmcamera_interface2 \
-    libmmjpeg_interface \
-    libqomx_core \
-    libshim_atomic \
-    libshim_camera \
-    mm-qcamera-app
-
 # Keystore
 PRODUCT_PACKAGES += \
     android.hardware.keymaster@3.0-impl
@@ -191,9 +176,10 @@ PRODUCT_PACKAGES += \
 
 # DRM
 PRODUCT_PACKAGES += \
-    android.hardware.drm@1.0-service \
     android.hardware.drm@1.0-impl \
-    android.hardware.drm@1.2-service.clearkey
+    android.hardware.drm@1.0-service \
+    android.hardware.drm@1.2-service.clearkey \
+    android.hardware.drm@1.2-service.widevine
 
 # OMX
 PRODUCT_PACKAGES += \

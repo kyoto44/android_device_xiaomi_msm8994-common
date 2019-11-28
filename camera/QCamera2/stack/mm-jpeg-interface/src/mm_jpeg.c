@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2015, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -44,11 +44,6 @@
 #include "mm_jpeg_interface.h"
 #include "mm_jpeg.h"
 #include "mm_jpeg_inlines.h"
-
-#ifdef LOAD_ADSP_RPC_LIB
-#include <dlfcn.h>
-#include <stdlib.h>
-#endif
 
 #define ENCODING_MODE_PARALLEL 1
 
@@ -870,7 +865,7 @@ OMX_ERRORTYPE mm_jpeg_session_config_ports(mm_jpeg_job_session_t* p_session)
  *
  */
 OMX_ERRORTYPE mm_jpeg_get_thumbnail_crop(mm_jpeg_dim_t *p_thumb_dim,
-  mm_jpeg_dim_t *p_main_dim, uint8_t crop_width) {
+  mm_jpeg_dim_t *p_main_dim __unused, uint8_t crop_width) {
   OMX_ERRORTYPE ret = OMX_ErrorNone;
   int cropped_width = 0, cropped_height = 0;
 
@@ -1902,7 +1897,9 @@ int32_t mm_jpeg_init(mm_jpeg_obj *my_obj)
     return -1;
   }
   work_buf_size = CEILING64((uint32_t)my_obj->max_pic_w) *
-    CEILING64((uint32_t)my_obj->max_pic_h) * 3U / 2U;
+    CEILING64((uint32_t)my_obj->max_pic_h) *
+    MM_JPEG_NOM_QUALITY_MUL_FACTOR;
+
   for (i = 0; i < initial_workbufs_cnt; i++) {
     my_obj->ionBuffer[i].size = CEILING32(work_buf_size);
     CDBG_HIGH("Max picture size %d x %d, WorkBufSize = %zu",
@@ -1934,15 +1931,6 @@ int32_t mm_jpeg_init(mm_jpeg_obj *my_obj)
     mm_jpeg_queue_deinit(&my_obj->ongoing_job_q);
     pthread_mutex_destroy(&my_obj->job_lock);
   }
-
-#ifdef LOAD_ADSP_RPC_LIB
-  my_obj->adsprpc_lib_handle = dlopen("libadsprpc.so", RTLD_NOW);
-  if (NULL == my_obj->adsprpc_lib_handle) {
-    CDBG_ERROR("%s:%d] Cannot load the library", __func__, __LINE__);
-    /* not returning error here bcoz even if this loading fails
-        we can go ahead with SW JPEG enc */
-  }
-#endif
 
   return rc;
 }
@@ -2272,6 +2260,30 @@ int32_t mm_jpeg_create_session(mm_jpeg_obj *my_obj,
     return -1;
   }
 
+  if (p_params->quality > MM_JPEG_NOM_QUALITY_THRESHOLD) {
+
+    work_buf_size = CEILING64((uint32_t)my_obj->max_pic_w) *
+      CEILING64((uint32_t)my_obj->max_pic_h) *
+      MM_JPEG_HIGH_QUALITY_MUL_FACTOR;
+
+    for (i = 0; i < my_obj->work_buf_cnt; i++) {
+      CDBG_HIGH("Max picture size %d x %d, modified WorkBufSize = %zu",
+        my_obj->max_pic_w, my_obj->max_pic_h, CEILING32(work_buf_size));
+
+      my_obj->ionBuffer[i].addr =
+        (uint8_t *)buffer_reallocate(&my_obj->ionBuffer[i],
+        CEILING32(work_buf_size), 1);
+      if (NULL == my_obj->ionBuffer[i].addr) {
+        CDBG_ERROR("%s:%d] Ion reallocation failed", __func__, __LINE__);
+        goto error1;
+      }
+    }
+  } else {
+    work_buf_size = CEILING64((uint32_t)my_obj->max_pic_w) *
+      CEILING64((uint32_t)my_obj->max_pic_h) *
+      MM_JPEG_NOM_QUALITY_MUL_FACTOR;
+  }
+
   num_omx_sessions = 1;
   if (p_params->burst_mode) {
     num_omx_sessions = MM_JPEG_CONCURRENT_SESSIONS_COUNT;
@@ -2281,8 +2293,6 @@ int32_t mm_jpeg_create_session(mm_jpeg_obj *my_obj,
     work_bufs_need = MM_JPEG_CONCURRENT_SESSIONS_COUNT;
   }
   CDBG_HIGH("%s:%d] >>>> Work bufs need %d", __func__, __LINE__, work_bufs_need);
-  work_buf_size = CEILING64((uint32_t)my_obj->max_pic_w) *
-      CEILING64((uint32_t)my_obj->max_pic_h) * 3 / 2;
   for (i = my_obj->work_buf_cnt; i < work_bufs_need; i++) {
      my_obj->ionBuffer[i].size = CEILING32(work_buf_size);
      CDBG_HIGH("Max picture size %d x %d, WorkBufSize = %zu",
@@ -2708,13 +2718,6 @@ int32_t mm_jpeg_close(mm_jpeg_obj *my_obj, uint32_t client_hdl)
 
   CDBG("%s:%d] ", __func__, __LINE__);
 
-#ifdef LOAD_ADSP_RPC_LIB
-  if (NULL != my_obj->adsprpc_lib_handle) {
-    dlclose(my_obj->adsprpc_lib_handle);
-    my_obj->adsprpc_lib_handle = NULL;
-  }
-#endif
-
   pthread_mutex_unlock(&my_obj->job_lock);
   CDBG("%s:%d] ", __func__, __LINE__);
 
@@ -2727,9 +2730,9 @@ int32_t mm_jpeg_close(mm_jpeg_obj *my_obj, uint32_t client_hdl)
   return rc;
 }
 
-OMX_ERRORTYPE mm_jpeg_ebd(OMX_HANDLETYPE hComponent,
+OMX_ERRORTYPE mm_jpeg_ebd(OMX_HANDLETYPE hComponent __unused,
   OMX_PTR pAppData,
-  OMX_BUFFERHEADERTYPE *pBuffer)
+  OMX_BUFFERHEADERTYPE *pBuffer __unused)
 {
   mm_jpeg_job_session_t *p_session = (mm_jpeg_job_session_t *) pAppData;
 
@@ -2740,7 +2743,7 @@ OMX_ERRORTYPE mm_jpeg_ebd(OMX_HANDLETYPE hComponent,
   return 0;
 }
 
-OMX_ERRORTYPE mm_jpeg_fbd(OMX_HANDLETYPE hComponent,
+OMX_ERRORTYPE mm_jpeg_fbd(OMX_HANDLETYPE hComponent __unused,
   OMX_PTR pAppData,
   OMX_BUFFERHEADERTYPE *pBuffer)
 {
@@ -2796,12 +2799,12 @@ OMX_ERRORTYPE mm_jpeg_fbd(OMX_HANDLETYPE hComponent,
 
 
 
-OMX_ERRORTYPE mm_jpeg_event_handler(OMX_HANDLETYPE hComponent,
+OMX_ERRORTYPE mm_jpeg_event_handler(OMX_HANDLETYPE hComponent __unused,
   OMX_PTR pAppData,
   OMX_EVENTTYPE eEvent,
   OMX_U32 nData1,
   OMX_U32 nData2,
-  OMX_PTR pEventData)
+  OMX_PTR pEventData __unused)
 {
   mm_jpeg_job_session_t *p_session = (mm_jpeg_job_session_t *) pAppData;
 

@@ -1046,15 +1046,13 @@ int32_t mm_stream_write_user_buf(mm_stream_t * my_obj,
             cont_buf->buf_cnt = my_obj->buf[buf->buf_idx].user_buf.bufs_used;
             for (i = 0; i < (int32_t)cont_buf->buf_cnt; i++) {
                 cont_buf->buf_idx[i] = my_obj->buf[buf->buf_idx].user_buf.buf_idx[i];
+                my_obj->buf[buf->buf_idx].user_buf.buf_idx[i] = -1;
             }
             rc = mm_stream_qbuf(my_obj, buf);
             if(rc < 0) {
                 CDBG_ERROR("%s: mm_camera_stream_qbuf(idx=%d) err=%d\n",
                            __func__, buf->buf_idx, rc);
             } else {
-                for (i = 0; i < (int32_t)cont_buf->buf_cnt; i++) {
-                    my_obj->buf[buf->buf_idx].user_buf.buf_idx[i] = -1;
-                }
                 my_obj->buf_status[buf->buf_idx].in_kernel = 1;
                 my_obj->buf[buf->buf_idx].user_buf.buf_in_use = 1;
             }
@@ -1103,15 +1101,13 @@ int32_t mm_stream_write_user_buf(mm_stream_t * my_obj,
             cont_buf->buf_cnt = my_obj->buf[index].user_buf.bufs_used;
             for (i = 0; i < (int32_t)cont_buf->buf_cnt; i++) {
                 cont_buf->buf_idx[i] = my_obj->buf[index].user_buf.buf_idx[i];
+                my_obj->buf[index].user_buf.buf_idx[i] = -1;
             }
             rc = mm_stream_qbuf(my_obj, &my_obj->buf[index]);
             if(rc < 0) {
                 CDBG_ERROR("%s: mm_camera_stream_qbuf(idx=%d) err=%d\n",
                            __func__, index, rc);
             } else {
-                for (i = 0; i < (int32_t)cont_buf->buf_cnt; i++) {
-                    my_obj->buf[index].user_buf.buf_idx[i] = -1;
-                }
                 my_obj->buf_status[index].in_kernel = 1;
                 my_obj->buf[index].user_buf.buf_in_use = 1;
                 my_obj->cur_bufs_staged = 0;
@@ -1266,14 +1262,12 @@ int32_t mm_stream_read_msm_frame(mm_stream_t * my_obj,
         buf_info->buf->frame_idx = vb.sequence;
         buf_info->buf->ts.tv_sec  = vb.timestamp.tv_sec;
         buf_info->buf->ts.tv_nsec = vb.timestamp.tv_usec * 1000;
-        buf_info->buf->flags = vb.flags;
 
-        CDBG_HIGH("%s: VIDIOC_DQBUF buf_index %d, frame_idx %d, stream type %d, rc %d,"
-                "queued: %d, buf_type = %d flags = %d",
+        CDBG("%s: VIDIOC_DQBUF buf_index %d, frame_idx %d, stream type %d, rc %d,"
+                "queued: %d, buf_type = %d",
             __func__, vb.index, buf_info->buf->frame_idx,
             my_obj->stream_info->stream_type, rc,
-            my_obj->queued_buffer_count, buf_info->buf->buf_type,
-            buf_info->buf->flags);
+            my_obj->queued_buffer_count, buf_info->buf->buf_type);
 
         buf_info->buf->is_uv_subsampled =
             (vb.reserved == V4L2_PIX_FMT_NV14 || vb.reserved == V4L2_PIX_FMT_NV41);
@@ -1514,7 +1508,7 @@ int32_t mm_stream_qbuf(mm_stream_t *my_obj, mm_camera_buf_def_t *buf)
                 my_obj, my_obj->stream_info->stream_type);
         }
     } else {
-        CDBG_HIGH("%s: VIDIOC_QBUF buf_index %d, stream type %d, rc %d, queued: %d", __func__,
+        CDBG("%s: VIDIOC_QBUF buf_index %d, stream type %d, rc %d, queued: %d", __func__,
             buffer.index, my_obj->stream_info->stream_type, rc, my_obj->queued_buffer_count);
     }
 
@@ -1609,9 +1603,6 @@ int32_t mm_stream_map_buf(mm_stream_t * my_obj,
     packet.payload.buf_map.stream_id = my_obj->server_stream_id;
     packet.payload.buf_map.frame_idx = frame_idx;
     packet.payload.buf_map.plane_idx = plane_idx;
-
-    CDBG("%s: mapping buf_type %d, stream_id %d, frame_idx %d, fd %d, size %d",
-            __func__, buf_type, my_obj->server_stream_id, frame_idx, fd, size);
     return mm_camera_util_sendmsg(my_obj->ch_obj->cam_obj,
                                   &packet,
                                   sizeof(cam_sock_packet_t),
@@ -3183,24 +3174,6 @@ int32_t mm_stream_calc_offset_analysis(cam_format_t fmt,
             buf_planes->plane_info.mp[0].len + buf_planes->plane_info.mp[1].len,
             CAM_PAD_TO_4K);
         break;
-    case CAM_FORMAT_Y_ONLY:
-        buf_planes->plane_info.num_planes = 1;
-
-        buf_planes->plane_info.mp[0].len =
-                PAD_TO_SIZE((uint32_t)(stride * scanline),
-                padding->plane_padding);
-        buf_planes->plane_info.mp[0].offset =
-                PAD_TO_SIZE((uint32_t)(offset_x + stride * offset_y),
-                padding->plane_padding);
-        buf_planes->plane_info.mp[0].offset_x = offset_x;
-        buf_planes->plane_info.mp[0].offset_y = offset_y;
-        buf_planes->plane_info.mp[0].stride = stride;
-        buf_planes->plane_info.mp[0].scanline = scanline;
-        buf_planes->plane_info.mp[0].width = dim->width;
-        buf_planes->plane_info.mp[0].height = dim->height;
-        buf_planes->plane_info.frame_len =
-                PAD_TO_SIZE(buf_planes->plane_info.mp[0].len, CAM_PAD_TO_4K);
-      break;
     default:
         CDBG_ERROR("%s: Invalid cam_format for snapshot %d",
                    __func__, fmt);
@@ -3248,6 +3221,7 @@ int32_t mm_stream_calc_offset_postproc(cam_stream_info_t *stream_info,
 
     switch (type) {
     case CAM_STREAM_TYPE_PREVIEW:
+    case CAM_STREAM_TYPE_CALLBACK:
         rc = mm_stream_calc_offset_preview(stream_info->fmt,
                                            &stream_info->dim,
                                            plns);
@@ -3258,7 +3232,6 @@ int32_t mm_stream_calc_offset_postproc(cam_stream_info_t *stream_info,
                                            plns);
         break;
     case CAM_STREAM_TYPE_SNAPSHOT:
-    case CAM_STREAM_TYPE_CALLBACK:
         rc = mm_stream_calc_offset_snapshot(stream_info->fmt,
                                             &stream_info->dim,
                                             padding,
@@ -3327,6 +3300,7 @@ int32_t mm_stream_calc_offset(mm_stream_t *my_obj)
 
     switch (my_obj->stream_info->stream_type) {
     case CAM_STREAM_TYPE_PREVIEW:
+    case CAM_STREAM_TYPE_CALLBACK:
         rc = mm_stream_calc_offset_preview(my_obj->stream_info->fmt,
                                            &dim,
                                            &my_obj->stream_info->buf_planes);
@@ -3337,7 +3311,6 @@ int32_t mm_stream_calc_offset(mm_stream_t *my_obj)
                                          &my_obj->stream_info->buf_planes);
       break;
     case CAM_STREAM_TYPE_SNAPSHOT:
-    case CAM_STREAM_TYPE_CALLBACK:
         rc = mm_stream_calc_offset_snapshot(my_obj->stream_info->fmt,
                                             &dim,
                                             &my_obj->padding_info,

@@ -283,7 +283,9 @@ int32_t QCameraPostProcessor::start(QCameraChannel *pSrcChannel)
             !m_parent->isLongshotEnabled() && (mTotalNumReproc > 0)) {
 
         QCameraChannel *pChannel = NULL;
-        pChannel = m_parent->needReprocess() ? mPPChannels[0] : pSrcChannel;
+        int ppChannel_idx = mTotalNumReproc - 1;
+        pChannel = m_parent->needReprocess() ? mPPChannels[ppChannel_idx] :
+                pSrcChannel;
         QCameraStream *pSnapshotStream = NULL;
         QCameraStream *pThumbStream = NULL;
         bool thumb_stream_needed = ((!m_parent->isZSLMode() ||
@@ -315,7 +317,7 @@ int32_t QCameraPostProcessor::start(QCameraChannel *pSrcChannel)
         // If thumbnail is not part of the reprocess channel, then
         // try to get it from the source channel
         if ((thumb_stream_needed) && (NULL == pThumbStream) &&
-                (pChannel == mPPChannels[0])) {
+                (pChannel == mPPChannels[ppChannel_idx])) {
             for (uint32_t i = 0; i < pSrcChannel->getNumOfStreams(); ++i) {
                 QCameraStream *pStream = pSrcChannel->getStreamByIndex(i);
 
@@ -754,7 +756,6 @@ bool QCameraPostProcessor::validatePostProcess(mm_camera_super_buf_t *frame)
 int32_t QCameraPostProcessor::processData(mm_camera_super_buf_t *frame)
 {
     bool triggerEvent = TRUE;
-    QCameraChannel *m_pReprocChannel = NULL;
 
     if (m_bInited == FALSE) {
         ALOGE("%s: postproc not initialized yet", __func__);
@@ -1986,10 +1987,6 @@ int32_t QCameraPostProcessor::encodeData(qcamera_jpeg_data_t *jpeg_job_data,
     jpg_job.encode_job.main_dim.dst_dim = dst_dim;
     jpg_job.encode_job.main_dim.crop = crop;
 
-    // get 3a sw version info
-    cam_q3a_version_t sw_version =
-        m_parent->getCamHalCapabilities()->q3a_version;
-
     // get exif data
     QCameraExif *pJpegExifObj = m_parent->getExifData();
     jpeg_job_data->pJpegExifObj = pJpegExifObj;
@@ -1997,14 +1994,6 @@ int32_t QCameraPostProcessor::encodeData(qcamera_jpeg_data_t *jpeg_job_data,
         jpg_job.encode_job.exif_info.exif_data = pJpegExifObj->getEntries();
         jpg_job.encode_job.exif_info.numOfEntries =
             pJpegExifObj->getNumOfEntries();
-        jpg_job.encode_job.exif_info.debug_data.sw_3a_version[0] =
-            sw_version.major_version;
-        jpg_job.encode_job.exif_info.debug_data.sw_3a_version[1] =
-            sw_version.minor_version;
-        jpg_job.encode_job.exif_info.debug_data.sw_3a_version[2] =
-            sw_version.patch_version;
-        jpg_job.encode_job.exif_info.debug_data.sw_3a_version[3] =
-            sw_version.new_feature_des;
     }
 
     // set rotation only when no online rotation or offline pp rotation is done before
@@ -2363,12 +2352,12 @@ void *QCameraPostProcessor::dataSaveRoutine(void *data)
                         ssize_t written_len = write(file_fd, job_data->out_data.buf_vaddr,
                                 job_data->out_data.buf_filled_len);
                         if ((ssize_t)job_data->out_data.buf_filled_len != written_len) {
-                            ALOGE("%s: Failed save complete data %d bytes "
+                            ALOGE("%s: Failed save complete data %zd bytes "
                                   "written instead of %d bytes!",
                                   __func__, written_len,
                                   job_data->out_data.buf_filled_len);
                         } else {
-                            CDBG_HIGH("%s: written number of bytes %d\n",
+                            CDBG_HIGH("%s: written number of bytes %zd\n",
                                 __func__, written_len);
                         }
 
@@ -2627,7 +2616,6 @@ int32_t QCameraPostProcessor::doReprocess()
     QCameraStream *pMetaStream = NULL;
     uint8_t meta_buf_index = 0;
     mm_camera_buf_def_t *meta_buf = NULL;
-    bool found_meta = FALSE;
 
     qcamera_pp_request_t *ppreq_job = (qcamera_pp_request_t *)m_inputPPQ.peek();
     if ((ppreq_job == NULL) || (ppreq_job->src_frame == NULL)) {

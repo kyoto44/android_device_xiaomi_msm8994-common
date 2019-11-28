@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2015, The Linux Foundataion. All rights reserved.
+/* Copyright (c) 2012-2016, The Linux Foundataion. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -31,6 +31,7 @@
 #define __QCAMERA2HARDWAREINTERFACE_H__
 
 #include <hardware/camera.h>
+#include <hardware/power.h>
 #include <utils/Log.h>
 #include <utils/Mutex.h>
 #include <utils/Condition.h>
@@ -45,7 +46,6 @@
 #include "QCameraPostProc.h"
 #include "QCameraThermalAdapter.h"
 #include "QCameraMem.h"
-#include "QCameraPerf.h"
 
 extern "C" {
 #include <mm_camera_interface.h>
@@ -182,6 +182,9 @@ public:
     static bool matchSnapshotNotifications(void *data, void *user_data);
     static bool matchPreviewNotifications(void *data, void *user_data);
     virtual int32_t flushPreviewNotifications();
+    static bool matchTimestampNotifications(void *data, void *user_data);
+    virtual int32_t flushVideoNotifications();
+
 private:
 
     camera_notify_callback         mNotifyCb;
@@ -194,6 +197,22 @@ private:
     QCameraCmdThread mProcTh;
     bool             mActive;
 };
+
+class QCameraPerfLock {
+public:
+    void    lock_init();
+    void    lock_deinit();
+    int32_t lock_rel();
+    int32_t lock_acq();
+private:
+    int32_t        (*perf_lock_acq)(int, int, int[], int);
+    int32_t        (*perf_lock_rel)(int);
+    void           *dlhandle;
+    uint32_t        mPerfLockEnable;
+    pthread_mutex_t dl_mutex;
+    int32_t         mPerfLockHandle;  // Performance lock library handle
+};
+
 class QCamera2HardwareInterface : public QCameraAllocator,
         public QCameraThermalCallback, public QCameraAdjustFPS
 {
@@ -247,7 +266,6 @@ public:
 
     static int getCapabilities(uint32_t cameraId, struct camera_info *info);
     static int initCapabilities(uint32_t cameraId, mm_camera_vtbl_t *cameraHandle);
-    cam_capability_t *getCamHalCapabilities();
 
     // Implementation of QCameraAllocator
     virtual QCameraMemory *allocateStreamBuf(cam_stream_type_t stream_type,
@@ -545,7 +563,8 @@ private:
     bool bRetroPicture;
     // Signifies AEC locked during zsl snapshots
     bool m_bLedAfAecLock;
-    cam_autofocus_state_t m_currentFocusState;
+
+    power_module_t *m_pPowerModule;   // power module
 
     uint32_t mDumpFrmCnt;  // frame dump count
     uint32_t mDumpSkipCnt; // frame skip count
@@ -637,6 +656,9 @@ private:
     uint32_t mInputCount;
     bool mAdvancedCaptureConfigured;
     bool mHDRBracketingEnabled;
+#ifdef USE_MEDIA_EXTENSIONS
+    QCameraVideoMemory *mVideoMem;
+#endif
 };
 
 }; // namespace qcamera
