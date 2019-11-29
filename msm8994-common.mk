@@ -119,7 +119,7 @@ PRODUCT_PACKAGES += \
     android.hardware.camera.provider@2.4-impl \
     libshim_atomic \
     libshim_camera \
-    Snap 
+    Camera2
 
 # Connectivity Engine support (CNE)
 PRODUCT_PACKAGES += \
@@ -179,7 +179,7 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     android.hardware.drm@1.0-impl \
     android.hardware.drm@1.0-service \
-    android.hardware.drm@1.1-service.clearkey
+    android.hardware.drm@1.2-service.clearkey
 
 # Widevine
 PRODUCT_PACKAGES += \
