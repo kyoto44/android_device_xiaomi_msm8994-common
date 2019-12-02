@@ -282,8 +282,9 @@ PRODUCT_PACKAGES += \
     init.qcom.usb.rc \
     init.qcom.usb.sh \
     ueventd.qcom.rc \
+    init.safailnet.rc \
     init.qcom.post_boot.sh
-
+    
  # Set default USB interface
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     persist.sys.usb.config=mtp,adb   
