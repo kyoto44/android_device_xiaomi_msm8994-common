@@ -175,18 +175,10 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     android.hardware.light@2.0-service.xiaomi_msm8994
 
-# DRM
+# OMX
 PRODUCT_PACKAGES += \
     android.hardware.drm@1.0-impl \
     android.hardware.drm@1.0-service \
-    android.hardware.drm@1.2-service.clearkey
-
-# Widevine
-PRODUCT_PACKAGES += \
-    android.hardware.drm@1.0-service.widevine    
-
-# OMX
-PRODUCT_PACKAGES += \
     libc2dcolorconvert \
     libdivxdrmdecrypt \
     libdrmclearkeyplugin \
@@ -284,7 +276,7 @@ PRODUCT_PACKAGES += \
     ueventd.qcom.rc \
     init.safailnet.rc \
     init.qcom.post_boot.sh
-    
+
  # Set default USB interface
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     persist.sys.usb.config=mtp,adb   
