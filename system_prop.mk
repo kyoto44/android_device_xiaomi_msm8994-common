@@ -279,7 +279,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.btconfig.vendor=qcom \
     ro.btconfig.chip=QCA6164 \
     persist.power.useautobrightadj=true \
-    persist.radio.apm_sim_not_pwdn=1
+    persist.radio.apm_sim_not_pwdn=1 \
+    debug.sf.latch_unsignaled=1
 
 # Surfaceflinger
 PRODUCT_PROPERTY_OVERRIDES += \
