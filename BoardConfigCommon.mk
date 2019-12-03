@@ -75,6 +75,12 @@ TARGET_EXFAT_DRIVER := exfat
 # Fonts
 USE_REDUCED_CJK_FONT_WEIGHTS := true
 
+# GPS
+BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE := msm8992
+BOARD_VENDOR_QCOM_LOC_PDK_FEATURE_SET := true
+USE_DEVICE_SPECIFIC_GPS := true
+TARGET_NO_RPC := true
+
 # Kernel
 TARGET_KERNEL_SOURCE := kernel/xiaomi/libra
 BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.console=ttyHSL0 androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x37 ehci-hcd.park=3 
