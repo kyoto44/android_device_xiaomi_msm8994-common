@@ -130,23 +130,18 @@ PRODUCT_PACKAGES += \
 
 # GPS
 PRODUCT_PACKAGES += \
+    android.hardware.gnss@1.0-impl
+
+PRODUCT_PACKAGES += \
     gps.$(BOARD_PLATFORM) \
     flp.conf \
     gps.conf \
     izat.conf \
-    lowi.conf \
-    quipc.conf \
-    sap.conf \
-    xtwifi.conf
+    sap.conf
     
 # Gatekeeper HAL
 PRODUCT_PACKAGES += \
     android.hardware.gatekeeper@1.0-impl
-
-# GNSS HAL
-PRODUCT_PACKAGES += \
-    libshims_get_process_name \
-    android.hardware.gnss@1.0-impl
 
 # Graphics
 PRODUCT_PACKAGES += \
