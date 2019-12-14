@@ -210,6 +210,7 @@ TARGET_LD_SHIM_LIBS += /system/vendor/lib64/libril-qc-qmi-1.so|rild_socket.so:/s
 # TWRP Support
 ifeq ($(WITH_TWRP),true)
 -include $(COMMON_PATH)/twrp/twrp.mk
+RECOVERY_VARIANT := twrp
 endif
 
 # APEX
