@@ -1,12 +1,9 @@
-ifneq ($(BUILD_TINY_ANDROID),true)
-
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := libloc_core
-LOCAL_MODULE_OWNER := qcom
-
+LOCAL_VENDOR_MODULE := true
 LOCAL_MODULE_TAGS := optional
 
 ifeq ($(TARGET_DEVICE),apq8026_lw)
@@ -21,38 +18,42 @@ LOCAL_SHARED_LIBRARIES := \
     libcutils \
     libgps.utils \
     libdl \
-    libprocessgroup
+    liblog
 
 LOCAL_SRC_FILES += \
     LocApiBase.cpp \
     LocAdapterBase.cpp \
     ContextBase.cpp \
     LocDualContext.cpp \
-    loc_core_log.cpp
+    loc_core_log.cpp \
+    data-items/DataItemsFactoryProxy.cpp \
+    SystemStatusOsObserver.cpp \
+    SystemStatus.cpp
 
 LOCAL_CFLAGS += \
      -fno-short-enums \
      -D_ANDROID_
 
 LOCAL_C_INCLUDES:= \
-    $(TARGET_OUT_HEADERS)/gps.utils \
-    $(TARGET_OUT_HEADERS)/libflp
+    $(LOCAL_PATH)/data-items \
+    $(LOCAL_PATH)/data-items/common \
+    $(LOCAL_PATH)/observer \
 
-LOCAL_COPY_HEADERS_TO:= libloc_core/
-LOCAL_COPY_HEADERS:= \
-    LocApiBase.h \
-    LocAdapterBase.h \
-    ContextBase.h \
-    LocDualContext.h \
-    LBSProxyBase.h \
-    UlpProxyBase.h \
-    gps_extended_c.h \
-    gps_extended.h \
-    loc_core_log.h \
-    LocAdapterProxyBase.h
+LOCAL_HEADER_LIBRARIES := \
+    libutils_headers \
+    libgps.utils_headers \
+    libloc_pla_headers \
+    liblocation_api_headers
 
-LOCAL_PRELINK_MODULE := false
+LOCAL_CFLAGS += $(GNSS_CFLAGS)
 
 include $(BUILD_SHARED_LIBRARY)
 
-endif # not BUILD_TINY_ANDROID
+include $(CLEAR_VARS)
+LOCAL_MODULE := libloc_core_headers
+LOCAL_EXPORT_C_INCLUDE_DIRS := \
+    $(LOCAL_PATH) \
+    $(LOCAL_PATH)/data-items \
+    $(LOCAL_PATH)/data-items/common \
+    $(LOCAL_PATH)/observer
+include $(BUILD_HEADER_LIBRARY)
