@@ -194,9 +194,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.qc.sdk.sensors.gestures=true \
     ro.qc.sdk.gestures.camera=false \
-    ro.qc.sdk.camera.facialproc=false \
-    persist.camera.HAL3.enabled=1
-
+    ro.qc.sdk.camera.facialproc=false
 
 #property to enable user to access Google WFD settings.
 PRODUCT_PROPERTY_OVERRIDES += \

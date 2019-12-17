@@ -31,7 +31,7 @@
 #define __LOC_TIMER_CPP_H__
 
 #include <stddef.h>
-#include <loc_pla.h>
+#include <log_util.h>
 
 // opaque class to provide service implementation.
 class LocTimerDelegate;
