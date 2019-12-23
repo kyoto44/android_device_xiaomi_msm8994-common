@@ -131,10 +131,14 @@ PRODUCT_PACKAGES += \
 
 # GPS
 PRODUCT_PACKAGES += \
-    android.hardware.gnss@1.0-impl \
-    android.hardware.gnss@1.0-service \
+    android.hardware.gnss@1.0-impl
+
+PRODUCT_PACKAGES += \
     gps.msm8992 \
-    quipc.conf
+    flp.conf \
+    gps.conf \
+    izat.conf \
+    sap.conf
 
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/gps/etc/flp.conf:system/etc/flp.conf \
@@ -255,7 +259,6 @@ PRODUCT_PACKAGES += \
     hostapd \
     dhcpcd.conf \
     readmac \
-    wificond \
     wpa_supplicant \
     wpa_supplicant.conf
 
