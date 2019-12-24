@@ -131,17 +131,21 @@ PRODUCT_PACKAGES += \
 
 # GPS
 PRODUCT_PACKAGES += \
-    android.hardware.gnss@1.0-impl \
-    android.hardware.gnss@1.0-service
+    android.hardware.gnss@1.0-impl
 
 PRODUCT_PACKAGES += \
-    libgps.utils \
-    libgnss \
-    liblocation_api \
-    gps.msm8992
+    gps.msm8992 \
+    flp.conf \
+    gps.conf \
+    izat.conf \
+    sap.conf
 
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/gps/etc/gps.conf:system/etc/gps.conf 
+    $(LOCAL_PATH)/gps/etc/flp.conf:system/etc/flp.conf \
+    $(LOCAL_PATH)/gps/etc/gps.conf:system/etc/gps.conf \
+    $(LOCAL_PATH)/gps/etc/izat.conf:system/etc/izat.conf \
+    $(LOCAL_PATH)/gps/etc/flp.conf:system/etc/flp.conf \
+    $(LOCAL_PATH)/gps/etc/sap.conf:system/etc/sap.conf 
     
 # Gatekeeper HAL
 PRODUCT_PACKAGES += \
