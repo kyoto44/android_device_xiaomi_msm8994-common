@@ -132,13 +132,20 @@ PRODUCT_PACKAGES += \
 # GPS
 PRODUCT_PACKAGES += \
     android.hardware.gnss@1.0-impl \
-    android.hardware.gnss@1.0-service
+    libshims_get_process_name
 
 PRODUCT_PACKAGES += \
     libgps.utils \
     libgnss \
     liblocation_api \
-    gps.msm8992
+    flp.conf \
+    gps.conf \
+    gps.msm8992 \
+    izat.conf \
+    lowi.conf \
+    quipc.conf \
+    sap.conf \
+    xtwifi.conf
 
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/gps/etc/gps.conf:system/etc/gps.conf 
