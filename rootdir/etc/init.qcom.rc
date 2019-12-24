@@ -471,6 +471,12 @@ service cnss-daemon /vendor/bin/cnss-daemon -n -l
     user system
     group system inet net_admin wifi
 
+service loc_launcher /vendor/bin/loc_launcher
+    #loc_launcher will start as root and set its uid to gps
+    class late_start
+    group gps inet net_raw diag net_admin wifi
+    writepid /dev/cpuset/system-background/tasks
+
 on property:crypto.driver.load=1
      insmod /system/lib/modules/qce.ko
      insmod /system/lib/modules/qcedev.ko
