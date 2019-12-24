@@ -129,19 +129,21 @@ PRODUCT_PACKAGES += \
     libcnefeatureconfig \
     services-ext
 
-# GPS
+# GNSS HAL
 PRODUCT_PACKAGES += \
     android.hardware.gnss@1.0-impl \
-    android.hardware.gnss@1.0-service \
-    gps.msm8992 \
-    quipc.conf
+    libshims_get_process_name
 
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/gps/etc/flp.conf:system/etc/flp.conf \
-    $(LOCAL_PATH)/gps/etc/gps.conf:system/etc/gps.conf \
-    $(LOCAL_PATH)/gps/etc/izat.conf:system/etc/izat.conf \
-    $(LOCAL_PATH)/gps/etc/flp.conf:system/etc/flp.conf \
-    $(LOCAL_PATH)/gps/etc/sap.conf:system/etc/sap.conf 
+# GPS
+PRODUCT_PACKAGES += \
+    flp.conf \
+    gps.conf \
+    gps.msm8992 \
+    izat.conf \
+    lowi.conf \
+    quipc.conf \
+    sap.conf \
+    xtwifi.conf
     
 # Gatekeeper HAL
 PRODUCT_PACKAGES += \
