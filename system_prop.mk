@@ -282,6 +282,15 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.radio.apm_sim_not_pwdn=1 \
     debug.sf.latch_unsignaled=1
 
+    # ADB at boot
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.adb.secure=0 \
+    persist.service.adb.enable=1 \
+    persist.service.debuggable=1 \
+    persist.sys.usb.config=mtp,adb 
+     
+
+
 # Surfaceflinger
 PRODUCT_PROPERTY_OVERRIDES += \
 ro.surface_flinger.max_frame_buffer_acquired_buffers=3 \
