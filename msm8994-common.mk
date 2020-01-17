@@ -190,6 +190,13 @@ PRODUCT_PACKAGES += \
     libOmxVenc \
     libstagefrighthw
 
+
+# Net
+PRODUCT_PACKAGES += \
+    android.system.net.netd@1.0 \
+    libandroid_net \
+    netutils-wrapper-1.0
+
 # Privapp Whitelist
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/privapp-permissions-qti.xml:system/etc/permissions/privapp-permissions-qti.xml
