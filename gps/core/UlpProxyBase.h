@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2015, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -66,7 +66,7 @@ public:
         (void)loc_technology_mask;
         return false;
     }
-    inline virtual bool reportSv(GnssSvStatus &svStatus,
+    inline virtual bool reportSv(HaxxSvStatus &svStatus,
                                  GpsLocationExtended &locationExtended,
                                  void* svExt) {
         (void)svStatus;
