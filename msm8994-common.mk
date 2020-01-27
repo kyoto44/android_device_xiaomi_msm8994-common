@@ -119,7 +119,7 @@ PRODUCT_PACKAGES += \
     android.hardware.camera.provider@2.4-impl \
     libshim_atomic \
     libshim_camera \
-    Snap
+    opencamera
 
 # Connectivity Engine support (CNE)
 PRODUCT_PACKAGES += \
