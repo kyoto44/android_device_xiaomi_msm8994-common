@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2014, 2016, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -30,13 +30,10 @@
 #ifndef __MM_JPEG_IONBUF_H__
 #define __MM_JPEG_IONBUF_H__
 
-
-#include <stdio.h>
+// System dependencies
 #include <linux/msm_ion.h>
-#include <sys/mman.h>
-#include <unistd.h>
-#include <errno.h>
-#include <fcntl.h>
+
+// JPEG dependencies
 #include "mm_jpeg_dbg.h"
 
 typedef struct  {
@@ -76,22 +73,6 @@ void* buffer_allocate(buffer_t *p_buffer, int cached);
  **/
 int buffer_deallocate(buffer_t *p_buffer);
 
-/** buffer_reallocate:
- *
- *  Arguments:
- *    @p_buffer: ION buffer
- *    @buf_size: buffer size to reallocate
- *    @cached: flag indicating cashed or not
- *
- *  Return:
- *    buffer address
- *
- *  Description:
- *    reallocates ION buffer
- *
- **/
-void* buffer_reallocate(buffer_t *p_buffer, uint32_t buf_size, int cached);
-
 /** buffer_invalidate:
  *
  *  Arguments:
@@ -105,6 +86,20 @@ void* buffer_reallocate(buffer_t *p_buffer, uint32_t buf_size, int cached);
  *
  **/
 int buffer_invalidate(buffer_t *p_buffer);
+
+/** buffer_clean:
+ *
+ *  Arguments:
+ *     @p_buffer: ION buffer
+ *
+ *  Return:
+ *     error val
+ *
+ *  Description:
+ *      clean the cached buffer
+ *
+ **/
+int buffer_clean(buffer_t *p_buffer);
 
 #endif
 

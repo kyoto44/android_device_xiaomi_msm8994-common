@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015, The Linux Foundataion. All rights reserved.
+/* Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are
@@ -29,10 +29,11 @@
 #ifndef __QCAMERA_HALHEADER_H__
 #define __QCAMERA_HALHEADER_H__
 
-extern "C" {
-#include <mm_camera_interface.h>
-#include <mm_jpeg_interface.h>
-}
+// System dependencies
+#include "hardware/gralloc.h"
+
+// Camera dependencies
+#include "cam_types.h"
 
 using namespace android;
 
@@ -41,12 +42,23 @@ namespace qcamera {
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
-class QCamera3Channel;
+#define IS_USAGE_ZSL(usage)  (((usage) & (GRALLOC_USAGE_HW_CAMERA_ZSL)) \
+        == (GRALLOC_USAGE_HW_CAMERA_ZSL))
+
+class QCamera3ProcessingChannel;
 
     typedef enum {
         INVALID,
         VALID,
     } stream_status_t;
+
+    typedef enum {
+       REPROCESS_TYPE_NONE,
+       REPROCESS_TYPE_JPEG,
+       REPROCESS_TYPE_YUV,
+       REPROCESS_TYPE_PRIVATE,
+       REPROCESS_TYPE_RAW
+    } reprocess_type_t;
 
     typedef struct {
         uint32_t out_buf_index;
@@ -59,6 +71,8 @@ class QCamera3Channel;
         uint8_t gps_coordinates_valid;
         double gps_coordinates[3];
         char gps_processing_method[GPS_PROCESSING_METHOD_SIZE];
+        uint8_t image_desc_valid;
+        char image_desc[EXIF_IMAGE_DESCRIPTION_SIZE];
     } jpeg_settings_t;
 
     typedef struct {
@@ -73,15 +87,10 @@ class QCamera3Channel;
         cam_stream_buf_plane_info_t input_stream_plane_info;
         cam_dimension_t output_stream_dim;
         cam_padding_info_t *padding;
-        QCamera3Channel *src_channel;
+        reprocess_type_t reprocess_type;
+        QCamera3ProcessingChannel *src_channel;
     } reprocess_config_t;
 
-    //Extended scene mode is scene mode defined by Android by not by
-    //cam_scene_mode_type. One such example is HIGH_SPEED_VIDEO scene mode.
-    typedef enum {
-        CAM_EXT_SCENE_MODE_HSV = 0,
-        CAM_EXT_SCENE_MODE_MAX
-    } cam_ext_scene_mode_type;
 };//namespace qcamera
 
 #endif
