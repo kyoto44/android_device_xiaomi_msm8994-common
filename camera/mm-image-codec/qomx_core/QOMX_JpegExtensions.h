@@ -60,7 +60,6 @@ typedef enum {
 #define QOMX_IMAGE_EXT_META_ENC_KEY_NAME      "OMX.QCOM.image.exttype.metaEncKey"
 #define QOMX_IMAGE_EXT_MEM_OPS_NAME      "OMX.QCOM.image.exttype.mem_ops"
 #define QOMX_IMAGE_EXT_JPEG_SPEED_NAME      "OMX.QCOM.image.exttype.jpeg.speed"
-#define QOMX_IMAGE_EXT_MULTI_IMAGE_NAME  "OMX.QCOM.image.exttype.multi.image"
 
 /** QOMX_IMAGE_EXT_INDEXTYPE
 *  This enum is an extension of the OMX_INDEXTYPE enum and
@@ -99,9 +98,6 @@ typedef enum {
 
   //Name: OMX.QCOM.image.exttype.jpeg.speed
   QOMX_IMAGE_EXT_JPEG_SPEED = 0x07F000B,
-
-  //Name: OMX.QCOM.image.exttype.multi.image
-  QOMX_IMAGE_EXT_MULTI_IMAGE = 0x07F000C,
 
 } QOMX_IMAGE_EXT_INDEXTYPE;
 
@@ -235,16 +231,11 @@ typedef struct {
 /**QOMX_METADATA
  *
  * meta data to be set in EXIF
- * @metadata: Dynamic metadata associated with each image
- * @metaPayloadSize : Size of dynamic metadata
- * @mobicat_mask : Mobicat MASk
- * @static_metadata: Static metadata associated with each image
  */
 typedef struct {
   OMX_U8  *metadata;
   OMX_U32 metaPayloadSize;
   OMX_U8 mobicat_mask;
-  OMX_U8 *static_metadata;
 } QOMX_METADATA;
 
 /**QOMX_META_ENC_KEY
@@ -307,11 +298,9 @@ typedef struct {
 * Structure holding the function pointers to
 * buffer memory operations
 * @get_memory - function to allocate buffer memory
-* @psession - reference to jpeg session ptr
 **/
 typedef struct {
-  int (*get_memory)( omx_jpeg_ouput_buf_t *p_out_buf, void *p_jpeg_session);
-  void *psession;
+  int (*get_memory)( omx_jpeg_ouput_buf_t *p_out_buf);
 } QOMX_MEM_OPS;
 
 /** QOMX_JPEG_SPEED_MODE
@@ -331,32 +320,6 @@ typedef enum {
 typedef struct {
   QOMX_JPEG_SPEED_MODE speedMode;
 } QOMX_JPEG_SPEED;
-
-/** OMX_IMAGE_TYPE
-* Enum specifying the values for the jpeg
-* image type setting
-**/
-typedef enum {
-  QOMX_JPEG_IMAGE_TYPE_JPEG,
-  QOMX_JPEG_IMAGE_TYPE_MPO
-} OMX_IMAGE_TYPE;
-
-/** QOMX_JPEG_IMAGE_SEQUENCE_INFO
-* Struct specifying the parameters for
-* sequence of jpeg images
-* @image_type : jpeg image type
-* @is_primary_image: Flag indicating if the image is a
-    primary image in the sequence
-* @num_of_images: Number of images in the sequence
-* @enable_metadata: Flag indicating if multi image
-    metadata need to be added to the image
-**/
-typedef struct {
-  OMX_IMAGE_TYPE image_type;
-  OMX_U8 is_primary_image;
-  OMX_U32 num_of_images;
-  OMX_U8 enable_metadata;
-} QOMX_JPEG_MULTI_IMAGE_INFO;
 
 #ifdef __cplusplus
  }

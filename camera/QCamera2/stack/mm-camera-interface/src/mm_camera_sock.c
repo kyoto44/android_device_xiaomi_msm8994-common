@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2015, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -27,16 +27,15 @@
  *
  */
 
-// System dependencies
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-#include <unistd.h>
 
-// Camera dependencies
 #include "mm_camera_dbg.h"
 #include "mm_camera_sock.h"
+#include "cam_types.h"
 
 /*===========================================================================
  * FUNCTION   : mm_camera_socket_create
@@ -63,27 +62,27 @@ int mm_camera_socket_create(int cam_id, mm_camera_sock_type_t sock_type)
         sktype = SOCK_STREAM;
         break;
       default:
-        LOGE("unknown socket type =%d", sock_type);
+        CDBG_ERROR("%s: unknown socket type =%d", __func__, sock_type);
         return -1;
     }
     socket_fd = socket(AF_UNIX, sktype, 0);
     if (socket_fd < 0) {
-        LOGE("error create socket fd =%d", socket_fd);
+        CDBG_ERROR("%s: error create socket fd =%d", __func__, socket_fd);
         return socket_fd;
     }
 
     memset(&sock_addr, 0, sizeof(sock_addr));
     sock_addr.addr_un.sun_family = AF_UNIX;
     snprintf(sock_addr.addr_un.sun_path,
-             UNIX_PATH_MAX, "/data/vendor/qcam/cam_socket%d", cam_id);
+             UNIX_PATH_MAX, QCAMERA_DUMP_FRM_LOCATION"cam_socket%d", cam_id);
     rc = connect(socket_fd, &sock_addr.addr, sizeof(sock_addr.addr_un));
     if (0 != rc) {
       close(socket_fd);
       socket_fd = -1;
-      LOGE("socket_fd=%d %s ", socket_fd, strerror(errno));
+      CDBG_ERROR("%s: socket_fd=%d %s ", __func__, socket_fd, strerror(errno));
     }
 
-    LOGD("socket_fd=%d %s", socket_fd,
+    CDBG("%s: socket_fd=%d %s", __func__, socket_fd,
         sock_addr.addr_un.sun_path);
     return socket_fd;
 }
@@ -125,7 +124,7 @@ int mm_camera_socket_sendmsg(
     char control[CMSG_SPACE(sizeof(int))];
 
     if (msg == NULL) {
-      LOGD("msg is NULL");
+      CDBG("%s: msg is NULL", __func__);
       return -1;
     }
     memset(&msgh, 0, sizeof(msgh));
@@ -136,7 +135,7 @@ int mm_camera_socket_sendmsg(
     iov[0].iov_len = buf_size;
     msgh.msg_iov = iov;
     msgh.msg_iovlen = 1;
-    LOGD("iov_len=%llu",
+    CDBG("%s: iov_len=%llu", __func__,
             (unsigned long long int)iov[0].iov_len);
 
     msgh.msg_control = NULL;
@@ -148,77 +147,14 @@ int mm_camera_socket_sendmsg(
       msgh.msg_controllen = sizeof(control);
       cmsghp = CMSG_FIRSTHDR(&msgh);
       if (cmsghp != NULL) {
-        LOGD("Got ctrl msg pointer");
+        CDBG("%s: Got ctrl msg pointer", __func__);
         cmsghp->cmsg_level = SOL_SOCKET;
         cmsghp->cmsg_type = SCM_RIGHTS;
         cmsghp->cmsg_len = CMSG_LEN(sizeof(int));
         *((int *)CMSG_DATA(cmsghp)) = sendfd;
-        LOGD("cmsg data=%d", *((int *) CMSG_DATA(cmsghp)));
+        CDBG("%s: cmsg data=%d", __func__, *((int *) CMSG_DATA(cmsghp)));
       } else {
-        LOGD("ctrl msg NULL");
-        return -1;
-      }
-    }
-
-    return sendmsg(fd, &(msgh), 0);
-}
-
-/*===========================================================================
- * FUNCTION   : mm_camera_socket_bundle_sendmsg
- *
- * DESCRIPTION:  send msg through domain socket
- *   @fd      : socket fd
- *   @msg     : pointer to msg to be sent over domain socket
- *   @sendfds : file descriptors to be sent
- *   @numfds  : num of file descriptors to be sent
- *
- * RETURN     : the total bytes of sent msg
- *==========================================================================*/
-int mm_camera_socket_bundle_sendmsg(
-  int fd,
-  void *msg,
-  size_t buf_size,
-  int sendfds[CAM_MAX_NUM_BUFS_PER_STREAM],
-  int numfds)
-{
-    struct msghdr msgh;
-    struct iovec iov[1];
-    struct cmsghdr * cmsghp = NULL;
-    char control[CMSG_SPACE(sizeof(int) * numfds)];
-    int *fds_ptr = NULL;
-
-    if (msg == NULL) {
-      LOGD("msg is NULL");
-      return -1;
-    }
-    memset(&msgh, 0, sizeof(msgh));
-    msgh.msg_name = NULL;
-    msgh.msg_namelen = 0;
-
-    iov[0].iov_base = msg;
-    iov[0].iov_len = buf_size;
-    msgh.msg_iov = iov;
-    msgh.msg_iovlen = 1;
-    LOGD("iov_len=%llu",
-            (unsigned long long int)iov[0].iov_len);
-
-    msgh.msg_control = NULL;
-    msgh.msg_controllen = 0;
-
-    /* if numfds is valid, we need to pass it through control msg */
-    if (numfds > 0) {
-      msgh.msg_control = control;
-      msgh.msg_controllen = sizeof(control);
-      cmsghp = CMSG_FIRSTHDR(&msgh);
-      if (cmsghp != NULL) {
-        cmsghp->cmsg_level = SOL_SOCKET;
-        cmsghp->cmsg_type = SCM_RIGHTS;
-        cmsghp->cmsg_len = CMSG_LEN(sizeof(int) * numfds);
-
-        fds_ptr = (int*) CMSG_DATA(cmsghp);
-        memcpy(fds_ptr, sendfds, sizeof(int) * numfds);
-      } else {
-        LOGE("ctrl msg NULL");
+        CDBG("%s: ctrl msg NULL", __func__);
         return -1;
       }
     }
@@ -252,7 +188,7 @@ int mm_camera_socket_recvmsg(
     int rcvd_len = 0;
 
     if ( (msg == NULL) || (buf_size <= 0) ) {
-      LOGE("msg buf is NULL");
+      CDBG_ERROR(" %s: msg buf is NULL", __func__);
       return -1;
     }
 
@@ -268,22 +204,22 @@ int mm_camera_socket_recvmsg(
     msgh.msg_iovlen = 1;
 
     if ( (rcvd_len = recvmsg(fd, &(msgh), 0)) <= 0) {
-      LOGE("recvmsg failed");
+      CDBG_ERROR(" %s: recvmsg failed", __func__);
       return rcvd_len;
     }
 
-    LOGD("msg_ctrl %p len %zd", msgh.msg_control,
+    CDBG("%s:  msg_ctrl %p len %zd", __func__, msgh.msg_control,
         msgh.msg_controllen);
 
     if( ((cmsghp = CMSG_FIRSTHDR(&msgh)) != NULL) &&
         (cmsghp->cmsg_len == CMSG_LEN(sizeof(int))) ) {
       if (cmsghp->cmsg_level == SOL_SOCKET &&
         cmsghp->cmsg_type == SCM_RIGHTS) {
-        LOGD("CtrlMsg is valid");
+        CDBG("%s:  CtrlMsg is valid", __func__);
         rcvd_fd = *((int *) CMSG_DATA(cmsghp));
-        LOGD("Receieved fd=%d", rcvd_fd);
+        CDBG("%s:  Receieved fd=%d", __func__, rcvd_fd);
       } else {
-        LOGE("Unexpected Control Msg. Line=%d");
+        CDBG_ERROR("%s:  Unexpected Control Msg. Line=%d", __func__, __LINE__);
       }
     }
 

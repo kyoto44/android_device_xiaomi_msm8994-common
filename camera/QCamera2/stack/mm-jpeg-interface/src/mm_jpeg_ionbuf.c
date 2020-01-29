@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014, 2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2015, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -27,17 +27,10 @@
  *
  */
 
-// System dependencies
-#include <errno.h>
-#include <fcntl.h>
+#include "mm_jpeg_ionbuf.h"
 #include <stdio.h>
 #include <string.h>
 #include <linux/msm_ion.h>
-#define MMAN_H <SYSTEM_HEADER_PREFIX/mman.h>
-#include MMAN_H
-
-// JPEG dependencies
-#include "mm_jpeg_ionbuf.h"
 
 /** buffer_allocate:
  *
@@ -65,7 +58,7 @@ void *buffer_allocate(buffer_t *p_buffer, int cached)
 
    p_buffer->ion_fd = open("/dev/ion", O_RDONLY);
    if(p_buffer->ion_fd < 0) {
-    LOGE("Ion open failed");
+    CDBG_ERROR("%s :Ion open failed", __func__);
     goto ION_ALLOC_FAILED;
   }
 
@@ -73,7 +66,7 @@ void *buffer_allocate(buffer_t *p_buffer, int cached)
   p_buffer->alloc.len = (p_buffer->alloc.len + 4095U) & (~4095U);
   lrc = ioctl(p_buffer->ion_fd, ION_IOC_ALLOC, &p_buffer->alloc);
   if (lrc < 0) {
-    LOGE("ION allocation failed len %zu",
+    CDBG_ERROR("%s :ION allocation failed len %zu", __func__,
       p_buffer->alloc.len);
     goto ION_ALLOC_FAILED;
   }
@@ -82,7 +75,7 @@ void *buffer_allocate(buffer_t *p_buffer, int cached)
   lrc = ioctl(p_buffer->ion_fd, ION_IOC_SHARE,
     &p_buffer->ion_info_fd);
   if (lrc < 0) {
-    LOGE("ION map failed %s", strerror(errno));
+    CDBG_ERROR("%s :ION map failed %s", __func__, strerror(errno));
     goto ION_MAP_FAILED;
   }
 
@@ -92,7 +85,7 @@ void *buffer_allocate(buffer_t *p_buffer, int cached)
     MAP_SHARED,p_buffer->p_pmem_fd, 0);
 
   if (l_buffer == MAP_FAILED) {
-    LOGE("ION_MMAP_FAILED: %s (%d)",
+    CDBG_ERROR("%s :ION_MMAP_FAILED: %s (%d)", __func__,
       strerror(errno), errno);
     goto ION_MAP_FAILED;
   }
@@ -137,6 +130,35 @@ int buffer_deallocate(buffer_t *p_buffer)
   return lrc;
 }
 
+/** buffer_reallocate:
+ *
+ *  Arguments:
+ *    @p_buffer: ION buffer
+ *    @buf_size: reallocate buffer size
+ *    @cached: flag indicating to cache or not
+ *
+ *  Return:
+ *    buffer address
+ *
+ *  Description:
+ *    reallocates ION buffer
+ *
+ **/
+void* buffer_reallocate(buffer_t *p_buffer, uint32_t buf_size, int cached)
+{
+  int rc = 0;
+
+  rc = buffer_deallocate(p_buffer);
+  if (0 != rc) {
+    CDBG_ERROR("%s:%d] Error releasing ION buffer", __func__, __LINE__);
+    return NULL;
+  }
+
+  p_buffer->size = buf_size;
+  return buffer_allocate(p_buffer, cached);
+}
+
+
 /** buffer_invalidate:
  *
  *  Arguments:
@@ -166,41 +188,7 @@ int buffer_invalidate(buffer_t *p_buffer)
 
   lrc = ioctl(p_buffer->ion_fd, ION_IOC_CUSTOM, &custom_data);
   if (lrc < 0)
-    LOGW("Cache Invalidate failed: %s\n", strerror(errno));
-
-  return lrc;
-}
-
-/** buffer_clean:
- *
- *  Arguments:
- *     @p_buffer: ION buffer
- *
- *  Return:
- *     error val
- *
- *  Description:
- *      Clean the cached buffer
- *
- **/
-int buffer_clean(buffer_t *p_buffer)
-{
-  int lrc = 0;
-  struct ion_flush_data cache_clean_data;
-  struct ion_custom_data custom_data;
-
-  memset(&cache_clean_data, 0, sizeof(cache_clean_data));
-  memset(&custom_data, 0, sizeof(custom_data));
-  cache_clean_data.vaddr = p_buffer->addr;
-  cache_clean_data.fd = p_buffer->ion_info_fd.fd;
-  cache_clean_data.handle = p_buffer->ion_info_fd.handle;
-  cache_clean_data.length = (unsigned int)p_buffer->size;
-  custom_data.cmd = (unsigned int)ION_IOC_CLEAN_CACHES;
-  custom_data.arg = (unsigned long)&cache_clean_data;
-
-  lrc = ioctl(p_buffer->ion_fd, ION_IOC_CUSTOM, &custom_data);
-  if (lrc < 0)
-    LOGW("Cache clean failed: %s\n", strerror(errno));
+    CDBG_ERROR("%s: Cache Invalidate failed: %s\n", __func__, strerror(errno));
 
   return lrc;
 }

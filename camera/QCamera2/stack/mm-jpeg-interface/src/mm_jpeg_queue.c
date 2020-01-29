@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2014, 2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -27,10 +27,7 @@
  *
  */
 
-// System dependencies
 #include <pthread.h>
-
-// JPEG dependencies
 #include "mm_jpeg_dbg.h"
 #include "mm_jpeg.h"
 
@@ -47,7 +44,7 @@ int32_t mm_jpeg_queue_enq(mm_jpeg_queue_t* queue, mm_jpeg_q_data_t data)
     mm_jpeg_q_node_t* node =
         (mm_jpeg_q_node_t *)malloc(sizeof(mm_jpeg_q_node_t));
     if (NULL == node) {
-        LOGE("No memory for mm_jpeg_q_node_t");
+        CDBG_ERROR("%s: No memory for mm_jpeg_q_node_t", __func__);
         return -1;
     }
 
@@ -70,7 +67,7 @@ int32_t mm_jpeg_queue_enq_head(mm_jpeg_queue_t* queue, mm_jpeg_q_data_t data)
   mm_jpeg_q_node_t* node =
         (mm_jpeg_q_node_t *)malloc(sizeof(mm_jpeg_q_node_t));
     if (NULL == node) {
-        LOGE("No memory for mm_jpeg_q_node_t");
+        CDBG_ERROR("%s: No memory for mm_jpeg_q_node_t", __func__);
         return -1;
     }
 

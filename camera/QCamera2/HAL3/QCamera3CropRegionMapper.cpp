@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2015, The Linux Foundataion. All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are
@@ -31,13 +31,8 @@
 #define ATRACE_TAG ATRACE_TAG_CAMERA
 #define LOG_TAG "QCamera3CropRegionMapper"
 
-// Camera dependencies
 #include "QCamera3CropRegionMapper.h"
 #include "QCamera3HWI.h"
-
-extern "C" {
-#include "mm_camera_dbg.h"
-}
 
 using namespace android;
 
@@ -94,12 +89,13 @@ void QCamera3CropRegionMapper::update(uint32_t active_array_w,
     // Sanity check
     if (active_array_w == 0 || active_array_h == 0 ||
             sensor_w == 0 || sensor_h == 0) {
-        LOGE("active_array size and sensor output size must be non zero");
+        ALOGE("%s: active_array size and sensor output size must be non zero",
+                __func__);
         return;
     }
     if (active_array_w < sensor_w || active_array_h < sensor_h) {
-        LOGE("invalid input: active_array [%d, %d], sensor size [%d, %d]",
-                 active_array_w, active_array_h, sensor_w, sensor_h);
+        ALOGE("%s: invalid input: active_array [%d, %d], sensor size [%d, %d]",
+                __func__, active_array_w, active_array_h, sensor_w, sensor_h);
         return;
     }
     mSensorW = sensor_w;
@@ -107,7 +103,7 @@ void QCamera3CropRegionMapper::update(uint32_t active_array_w,
     mActiveArrayW = active_array_w;
     mActiveArrayH = active_array_h;
 
-    LOGH("active_array: %d x %d, sensor size %d x %d",
+    ALOGI("%s: active_array: %d x %d, sensor size %d x %d", __func__,
             mActiveArrayW, mActiveArrayH, mSensorW, mSensorH);
 }
 
@@ -129,7 +125,7 @@ void QCamera3CropRegionMapper::toActiveArray(int32_t& crop_left, int32_t& crop_t
 {
     if (mSensorW == 0 || mSensorH == 0 ||
             mActiveArrayW == 0 || mActiveArrayH == 0) {
-        LOGE("sensor/active array sizes are not initialized!");
+        ALOGE("%s: sensor/active array sizes are not initialized!", __func__);
         return;
     }
 
@@ -161,7 +157,7 @@ void QCamera3CropRegionMapper::toSensor(int32_t& crop_left, int32_t& crop_top,
 {
     if (mSensorW == 0 || mSensorH == 0 ||
             mActiveArrayW == 0 || mActiveArrayH == 0) {
-        LOGE("sensor/active array sizes are not initialized!");
+        ALOGE("%s: sensor/active array sizes are not initialized!", __func__);
         return;
     }
 
@@ -170,12 +166,12 @@ void QCamera3CropRegionMapper::toSensor(int32_t& crop_left, int32_t& crop_top,
     crop_width = crop_width * mSensorW / mActiveArrayW;
     crop_height = crop_height * mSensorH / mActiveArrayH;
 
-    LOGD("before bounding left %d, top %d, width %d, height %d",
-         crop_left, crop_top, crop_width, crop_height);
+    CDBG("%s: before bounding left %d, top %d, width %d, height %d",
+        __func__, crop_left, crop_top, crop_width, crop_height);
     boundToSize(crop_left, crop_top, crop_width, crop_height,
             mSensorW, mSensorH);
-    LOGD("after bounding left %d, top %d, width %d, height %d",
-         crop_left, crop_top, crop_width, crop_height);
+    CDBG("%s: after bounding left %d, top %d, width %d, height %d",
+        __func__, crop_left, crop_top, crop_width, crop_height);
 }
 
 /*===========================================================================
@@ -226,13 +222,13 @@ void QCamera3CropRegionMapper::toActiveArray(uint32_t& x, uint32_t& y)
 {
     if (mSensorW == 0 || mSensorH == 0 ||
             mActiveArrayW == 0 || mActiveArrayH == 0) {
-        LOGE("sensor/active array sizes are not initialized!");
+        ALOGE("%s: sensor/active array sizes are not initialized!", __func__);
         return;
     }
     if ((x > static_cast<uint32_t>(mSensorW)) ||
             (y > static_cast<uint32_t>(mSensorH))) {
-        LOGE("invalid co-ordinate (%d, %d) in (0, 0, %d, %d) space",
-                 x, y, mSensorW, mSensorH);
+        ALOGE("%s: invalid co-ordinate (%d, %d) in (0, 0, %d, %d) space",
+                __func__, x, y, mSensorW, mSensorH);
         return;
     }
     x = x * mActiveArrayW / mSensorW;
@@ -255,14 +251,14 @@ void QCamera3CropRegionMapper::toSensor(uint32_t& x, uint32_t& y)
 {
     if (mSensorW == 0 || mSensorH == 0 ||
             mActiveArrayW == 0 || mActiveArrayH == 0) {
-        LOGE("sensor/active array sizes are not initialized!");
+        ALOGE("%s: sensor/active array sizes are not initialized!", __func__);
         return;
     }
 
     if ((x > static_cast<uint32_t>(mActiveArrayW)) ||
             (y > static_cast<uint32_t>(mActiveArrayH))) {
-        LOGE("invalid co-ordinate (%d, %d) in (0, 0, %d, %d) space",
-                 x, y, mSensorW, mSensorH);
+        ALOGE("%s: invalid co-ordinate (%d, %d) in (0, 0, %d, %d) space",
+                __func__, x, y, mSensorW, mSensorH);
         return;
     }
     x = x * mSensorW / mActiveArrayW;
