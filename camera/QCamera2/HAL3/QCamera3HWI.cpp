@@ -1364,7 +1364,7 @@ void QCamera3HardwareInterface::updateTimeStampInPendingBuffers(
                 k != req->mPendingBufferList.end(); k++ ) {
             struct private_handle_t *priv_handle =
                     (struct private_handle_t *) (*(k->buffer));
-            setMetaData(priv_handle, 0x0001, &timestamp);
+            //setMetaData(priv_handle, 0x0001, &timestamp);
         }
     }
     return;

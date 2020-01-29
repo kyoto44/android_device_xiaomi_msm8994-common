@@ -47,6 +47,8 @@
 #include "mm_camera_interface.h"
 #include "mm_camera.h"
 
+#define MSM_CAMERA_PRIV_G_SESSION_ID (V4L2_CID_PRIVATE_BASE + 14)
+
 #define SET_PARM_BIT32(parm, parm_arr) \
     (parm_arr[parm/32] |= (1<<(parm%32)))
 
