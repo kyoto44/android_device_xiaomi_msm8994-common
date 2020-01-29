@@ -37,7 +37,7 @@
 // Camera dependencies
 #include "cam_types.h"
 
-#define CAM_PRIV_IOCTL_BASE (V4L2_CID_PRIVATE_BASE + MSM_CAMERA_PRIV_CMD_MAX)
+#define CAM_PRIV_IOCTL_BASE (V4L2_CID_PRIVATE_BASE + 14)
 typedef enum {
     /* session based parameters */
     CAM_PRIV_PARM = CAM_PRIV_IOCTL_BASE,
@@ -601,7 +601,7 @@ typedef struct {
 } cam_stream_img_prop_t;
 
 typedef struct {
-    uint8_t enableStream; /*0 – stop and 1-start */
+    uint8_t enableStream; /*0 ï¿½ stop and 1-start */
 } cam_request_frames;
 
 typedef struct {
