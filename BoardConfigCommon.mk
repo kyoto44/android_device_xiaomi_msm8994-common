@@ -212,8 +212,5 @@ ifeq ($(WITH_TWRP),true)
 RECOVERY_VARIANT := twrp
 endif
 
-# APEX
-DEXPREOPT_GENERATE_APEX_IMAGE := true
-
 # Build
 BUILD_BROKEN_DUP_RULES := true
