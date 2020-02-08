@@ -7,6 +7,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := libloc_eng
 LOCAL_MODULE_OWNER := qcom
+LOCAL_VENDOR_MODULE := true
 
 LOCAL_MODULE_TAGS := optional
 
@@ -16,8 +17,7 @@ LOCAL_SHARED_LIBRARIES := \
     libdl \
     liblog \
     libloc_core \
-    libgps.utils \
-    libprocessgroup
+    libgps.utils
 
 LOCAL_SRC_FILES += \
     loc_eng.cpp \
@@ -37,12 +37,14 @@ LOCAL_SRC_FILES += \
 
 LOCAL_CFLAGS += \
      -fno-short-enums \
-     -D_ANDROID_
+     -D_ANDROID_ \
+     -O3 \
+     -g0
 
 LOCAL_C_INCLUDES:= \
     $(TARGET_OUT_HEADERS)/gps.utils \
     $(TARGET_OUT_HEADERS)/libloc_core \
-    $(LOCAL_PATH)/loc_api/libloc_api_50001 \
+    $(LOCAL_PATH) \
     $(TARGET_OUT_HEADERS)/libflp
 
 LOCAL_COPY_HEADERS_TO:= libloc_eng/
@@ -62,8 +64,9 @@ include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := gps.msm8992
+LOCAL_MODULE := gps.$(TARGET_BOARD_PLATFORM)
 LOCAL_MODULE_OWNER := qcom
+LOCAL_VENDOR_MODULE := true
 
 LOCAL_MODULE_TAGS := optional
 
@@ -76,8 +79,7 @@ LOCAL_SHARED_LIBRARIES := \
     libloc_eng \
     libloc_core \
     libgps.utils \
-    libdl \
-    libprocessgroup
+    libdl
 
 ifneq ($(filter $(TARGET_DEVICE), apq8084 msm8960), false)
 endif

@@ -28,7 +28,9 @@ LOCAL_SRC_FILES += \
 # Flag -std=c++11 is not accepted by compiler when LOCAL_CLANG is set to true
 LOCAL_CFLAGS += \
      -fno-short-enums \
-     -D_ANDROID_
+     -D_ANDROID_ \
+     -O3 \
+     -g0
 
 ifeq ($(TARGET_BUILD_VARIANT),user)
    LOCAL_CFLAGS += -DTARGET_BUILD_VARIANT_USER
@@ -60,6 +62,8 @@ LOCAL_COPY_HEADERS:= \
    loc_misc_utils.h
 
 LOCAL_MODULE := libgps.utils
+LOCAL_MODULE_OWNER := qcom
+LOCAL_VENDOR_MODULE := true
 
 LOCAL_MODULE_TAGS := optional
 
