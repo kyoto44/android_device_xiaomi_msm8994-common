@@ -1,5 +1,8 @@
 $(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
 
+# Enable updating of APEXes
+$(call inherit-product, $(SRC_TARGET_DIR)/product/updatable_apex.mk)
+
 # System properties
 -include $(LOCAL_PATH)/system_prop.mk
 
@@ -117,7 +120,7 @@ PRODUCT_PACKAGES += \
     camera.device@3.2-impl \
     libshim_atomic \
     libshim_camera \
-    Gcam
+    Snap
 
 # Connectivity Engine support (CNE)
 PRODUCT_PACKAGES += \
@@ -127,16 +130,18 @@ PRODUCT_PACKAGES += \
     services-ext
 
 # GPS
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/gps/etc/flp.conf:system/etc/flp.conf \
+    $(LOCAL_PATH)/gps/etc/gps.conf:system/etc/gps.conf \
+    $(LOCAL_PATH)/gps/etc/izat.conf:system/etc/izat.conf \
+    $(LOCAL_PATH)/gps/etc/lowi.conf:system/etc/lowi.conf  \
+    $(LOCAL_PATH)/gps/etc/sap.conf:system/etc/sap.conf \
+    $(LOCAL_PATH)/gps/etc/xtwifi.conf:system/etc/xtwifi.conf
+
 PRODUCT_PACKAGES += \
     android.hardware.gnss@1.0-impl \
-    android.hardware.gnss@1.0-service \
-    gps.msm8992
-
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/gps/flp.conf:system/etc/flp.conf \
-    $(LOCAL_PATH)/gps/gps.conf:system/etc/gps.conf \
-    $(LOCAL_PATH)/gps/izat.conf:system/etc/izat.conf \
-    $(LOCAL_PATH)/gps/sap.conf:system/etc/sap.conf 
+    gps.msm8992 \
+    libshims_get_process_name
     
 # Gatekeeper HAL
 PRODUCT_PACKAGES += \
@@ -219,10 +224,6 @@ PRODUCT_PACKAGES += \
 # Vibrator
 PRODUCT_PACKAGES += \
     android.hardware.vibrator@1.0-impl
-
-# Seccomp
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/seccomp/mediacodec.policy:system/vendor/etc/seccomp_policy/mediacodec.policy
 
 # Sensors
 PRODUCT_PACKAGES += \

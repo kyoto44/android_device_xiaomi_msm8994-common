@@ -33,22 +33,15 @@ LOCAL_SRC_FILES += \
     loc_eng_dmn_conn_glue_pipe.c
 
 LOCAL_CFLAGS += \
-    -fno-short-enums \
-    -D_ANDROID_ \
-    -Wno-format \
-    -Wno-mismatched-tags \
-    -Wno-null-conversion \
-    -Wno-reorder \
-    -Wno-sign-compare \
-    -Wno-unused-function \
-    -Wno-unused-parameter \
-    -Wno-unused-variable
+     -fno-short-enums \
+     -D_ANDROID_ \
+     -O3
 
 LOCAL_C_INCLUDES:= \
     $(TARGET_OUT_HEADERS)/gps.utils \
     $(TARGET_OUT_HEADERS)/libloc_core \
-    $(LOCAL_PATH)/loc_api/libloc_api_50001 \
-    $(TARGET_OUT_HEADERS)/libflp    
+    $(LOCAL_PATH) \
+    $(TARGET_OUT_HEADERS)/libflp
 
 LOCAL_COPY_HEADERS_TO:= libloc_eng/
 LOCAL_COPY_HEADERS:= \
@@ -80,6 +73,9 @@ LOCAL_SHARED_LIBRARIES := \
     libloc_core \
     libgps.utils \
     libdl
+
+ifneq ($(filter $(TARGET_DEVICE), apq8084 msm8960), false)
+endif
 
 LOCAL_SRC_FILES += \
     loc.cpp \
