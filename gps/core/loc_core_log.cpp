@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2015, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -57,7 +57,7 @@ static const loc_name_val_s_type gps_status_name[] =
         NAME_VAL(GPS_STATUS_ENGINE_ON),
         NAME_VAL(GPS_STATUS_ENGINE_OFF),
 };
-static int gps_status_num = sizeof(gps_status_name) / sizeof(loc_name_val_s_type);
+static const int gps_status_num = sizeof(gps_status_name) / sizeof(loc_name_val_s_type);
 
 /* Find Android GPS status name */
 const char *loc_get_gps_status_name(GpsStatusValue gps_status)

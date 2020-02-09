@@ -1,3 +1,5 @@
+ifneq ($(BUILD_TINY_ANDROID),true)
+
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
@@ -7,6 +9,12 @@ LOCAL_MODULE_OWNER := qcom
 LOCAL_VENDOR_MODULE := true
 
 LOCAL_MODULE_TAGS := optional
+
+ifeq ($(TARGET_DEVICE),apq8026_lw)
+LOCAL_CFLAGS += -DPDK_FEATURE_SET
+else ifeq ($(BOARD_VENDOR_QCOM_LOC_PDK_FEATURE_SET),true)
+LOCAL_CFLAGS += -DPDK_FEATURE_SET
+endif
 
 LOCAL_SHARED_LIBRARIES := \
     liblog \
@@ -25,7 +33,8 @@ LOCAL_SRC_FILES += \
 LOCAL_CFLAGS += \
      -fno-short-enums \
      -D_ANDROID_ \
-     -O3 
+     -O3 \
+     -g0
 
 LOCAL_C_INCLUDES:= \
     $(TARGET_OUT_HEADERS)/gps.utils \
@@ -45,4 +54,8 @@ LOCAL_COPY_HEADERS:= \
     LocAdapterProxyBase.h \
     fused_location_extended.h
 
+LOCAL_PRELINK_MODULE := false
+
 include $(BUILD_SHARED_LIBRARY)
+
+endif # not BUILD_TINY_ANDROID

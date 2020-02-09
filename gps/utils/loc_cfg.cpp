@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2015, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -61,7 +61,7 @@ static const loc_param_s_type loc_param_table[] =
         {"DEBUG_LEVEL", &DEBUG_LEVEL, NULL, 'n'},
         {"TIMESTAMP", &TIMESTAMP, NULL, 'n'},
 };
-int loc_param_num = sizeof(loc_param_table) / sizeof(loc_param_s_type);
+static const int loc_param_num = sizeof(loc_param_table) / sizeof(loc_param_s_type);
 
 typedef struct loc_param_v_type
 {

@@ -1,4 +1,4 @@
-   /* Copyright (c) 2011-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2016, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -50,6 +50,7 @@ using namespace loc_core;
 //Globals defns
 static gps_location_callback gps_loc_cb = NULL;
 static gps_sv_status_callback gps_sv_cb = NULL;
+static gps_ni_notify_callback gps_ni_cb = NULL;
 
 static void local_loc_cb(UlpLocation *location, void *locExt);
 static void local_sv_cb(GpsSvStatus *sv_status, void *svExt);

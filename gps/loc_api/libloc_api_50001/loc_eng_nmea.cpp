@@ -1,4 +1,4 @@
-/* Copyright (c) 2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -707,7 +707,7 @@ SIDE EFFECTS
 
 ===========================================================================*/
 void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
-                              const HaxxSvStatus &svStatus, const GpsLocationExtended &locationExtended)
+                              const GnssSvStatus &svStatus, const GpsLocationExtended &locationExtended)
 {
     ENTRY_LOG();
 
@@ -730,11 +730,22 @@ void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
     {
         if (GNSS_CONSTELLATION_GPS == svStatus.gnss_sv_list[svNumber - 1].constellation)
         {
+            // cache the used in fix mask, as it will be needed to send $GPGSA
+            // during the position report
+            if (GNSS_SV_FLAGS_USED_IN_FIX == (svStatus.gnss_sv_list[svNumber - 1].flags & GNSS_SV_FLAGS_USED_IN_FIX))
+            {
+                loc_eng_data_p->gps_used_mask |= (1 << (svStatus.gnss_sv_list[svNumber - 1].svid - 1));
+            }
             gpsCount++;
         }
-        else if( (svStatus.sv_list[svNumber-1].prn >= GLONASS_PRN_START) &&
-                 (svStatus.sv_list[svNumber-1].prn <= GLONASS_PRN_END) )
+        else if (GNSS_CONSTELLATION_GLONASS == svStatus.gnss_sv_list[svNumber - 1].constellation)
         {
+            // cache the used in fix mask, as it will be needed to send $GNGSA
+            // during the position report
+            if (GNSS_SV_FLAGS_USED_IN_FIX == (svStatus.gnss_sv_list[svNumber - 1].flags & GNSS_SV_FLAGS_USED_IN_FIX))
+            {
+                loc_eng_data_p->glo_used_mask |= (1 << (svStatus.gnss_sv_list[svNumber - 1].svid - 1));
+            }
             glnCount++;
         }
     }
@@ -774,8 +785,7 @@ void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
 
             for (int i = 0; (svNumber <= svCount) && (i < 4); svNumber++)
             {
-                if( (svStatus.sv_list[svNumber-1].prn >= GPS_PRN_START) &&
-                    (svStatus.sv_list[svNumber-1].prn <= GPS_PRN_END) )
+                if (GNSS_CONSTELLATION_GPS == svStatus.gnss_sv_list[svNumber - 1].constellation)
                 {
                     length = snprintf(pMarker, lengthRemaining, ",%02d,%02d,%03d,",
                                       svStatus.gnss_sv_list[svNumber - 1].svid,
@@ -851,8 +861,8 @@ void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
 
             for (int i = 0; (svNumber <= svCount) && (i < 4); svNumber++)
             {
-                if( (svStatus.sv_list[svNumber-1].prn >= GLONASS_PRN_START) &&
-                    (svStatus.sv_list[svNumber-1].prn <= GLONASS_PRN_END) )      {
+                if (GNSS_CONSTELLATION_GLONASS == svStatus.gnss_sv_list[svNumber - 1].constellation)
+                {
 
                     length = snprintf(pMarker, lengthRemaining, ",%02d,%02d,%03d,",
                                       svStatus.gnss_sv_list[svNumber - 1].svid,
@@ -867,7 +877,7 @@ void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
                     pMarker += length;
                     lengthRemaining -= length;
 
-                    if (svStatus.sv_list[svNumber-1].snr > 0)
+                    if (svStatus.gnss_sv_list[svNumber - 1].c_n0_dbhz > 0)
                     {
                         length = snprintf(pMarker, lengthRemaining, "%02d",
                                           (int)(0.5 + svStatus.gnss_sv_list[svNumber - 1].c_n0_dbhz)); //float to int
@@ -892,11 +902,6 @@ void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
         } //while
 
     } //if
-
-    // cache the used in fix mask, as it will be needed to send $GPGSA/$GNGSA
-    // during the position report
-    loc_eng_data_p->gps_used_mask = svStatus.gps_used_in_fix_mask;
-    loc_eng_data_p->glo_used_mask = svStatus.glo_used_in_fix_mask;
 
     // For RPC, the DOP are sent during sv report, so cache them
     // now to be sent during position report.

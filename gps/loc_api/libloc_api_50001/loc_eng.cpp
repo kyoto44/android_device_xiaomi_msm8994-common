@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2009-2016, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -90,8 +90,6 @@ using namespace loc_core;
 
 boolean configAlreadyRead = false;
 unsigned int agpsStatus = 0;
-loc_gps_cfg_s_type gps_conf;
-loc_sap_cfg_s_type sap_conf;
 
 /* Parameter spec table */
 static const loc_param_s_type gps_conf_table[] =
@@ -789,29 +787,6 @@ struct LocEngSensorPerfControlConfig : public LocMsg
     }
     inline virtual void log() const
     {
-        locallog();
-    }
-};
-
-//        case LOC_ENG_MSG_EXT_POWER_CONFIG:
-struct LocEngExtPowerConfig : public LocMsg {
-    LocEngAdapter* mAdapter;
-    const int mIsBatteryCharging;
-    inline LocEngExtPowerConfig(LocEngAdapter* adapter,
-                                int isBatteryCharging) :
-        LocMsg(), mAdapter(adapter),
-        mIsBatteryCharging(isBatteryCharging)
-    {
-        locallog();
-    }
-    inline virtual void proc() const {
-        mAdapter->setExtPowerConfig(mIsBatteryCharging);
-    }
-    inline void locallog() const {
-        LOC_LOGV("LocEngExtPowerConfig - isBatteryCharging: %d",
-                 mIsBatteryCharging);
-    }
-    inline virtual void log() const {
         locallog();
     }
 };
@@ -1594,8 +1569,10 @@ struct LocEngInit : public LocMsg
     inline virtual void proc() const
     {
         loc_eng_reinit(*mLocEng);
+        mLocEng->adapter->setGpsLock(1);
         // set the capabilities
         mLocEng->adapter->sendMsg(new LocEngSetCapabilities(mLocEng));
+        mLocEng->adapter->sendMsg(new LocEngSetSystemInfo(mLocEng));
     }
     inline void locallog() const
     {
@@ -1645,7 +1622,7 @@ struct LocEngAtlOpenSuccess : public LocMsg
     {
         LOC_LOGV("LocEngAtlOpenSuccess agps type: %s\n  apn: %s\n"
                  "  bearer type: %s",
-                 loc_get_agps_type_name(mStateMachine->getType()),
+                 loc_get_agps_type_name(mAgpsType),
                  mAPN,
                  loc_get_agps_bear_name(mBearerType));
     }
@@ -1953,24 +1930,6 @@ inline void LocEngReportGnssMeasurement::log() const
     }
 #define INIT_CHECK(ctx, ret) STATE_CHECK(ctx, "instance not initialized", ret)
 
-uint32_t getCarrierCapabilities() {
-    #define carrierMSA (uint32_t)0x2
-    #define carrierMSB (uint32_t)0x1
-    #define gpsConfMSA (uint32_t)0x4
-    #define gpsConfMSB (uint32_t)0x2
-    uint32_t capabilities = gps_conf.CAPABILITIES;
-    if ((gps_conf.SUPL_MODE & carrierMSA) != carrierMSA) {
-        capabilities &= ~gpsConfMSA;
-    }
-    if ((gps_conf.SUPL_MODE & carrierMSB) != carrierMSB) {
-        capabilities &= ~gpsConfMSB;
-    }
-
-    LOC_LOGV("getCarrierCapabilities: CAPABILITIES %x, SUPL_MODE %x, carrier capabilities %x",
-             gps_conf.CAPABILITIES, gps_conf.SUPL_MODE, capabilities);
-    return capabilities;
-}
-
 /*===========================================================================
 FUNCTION    loc_eng_init
 
@@ -2032,7 +1991,7 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks *callbacks,
         event = event ^ LOC_API_ADAPTER_BIT_NMEA_1HZ_REPORT; // unregister for modem NMEA report
         loc_eng_data.generateNmea = true;
     }
-    else
+    else if (gps_conf.NMEA_PROVIDER == NMEA_PROVIDER_MP)
     {
         loc_eng_data.generateNmea = false;
     }
@@ -2041,6 +2000,8 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks *callbacks,
         new LocEngAdapter(event, &loc_eng_data, context,
                           (LocThread::tCreate)callbacks->create_thread_cb);
 
+    loc_eng_data.adapter->mGnssInfo.size = sizeof(GnssSystemInfo);
+    loc_eng_data.adapter->mGnssInfo.year_of_hw = 2015;
     LOC_LOGD("loc_eng_init created client, id = %p\n",
              loc_eng_data.adapter);
     loc_eng_data.adapter->sendMsg(new LocEngInit(&loc_eng_data));
@@ -2665,6 +2626,7 @@ getAgpsStateMachine(loc_eng_data_s_type &locEng, AGpsExtType agpsType)
         else
         {
             stateMachine = locEng.agnss_nif;
+        }
         break;
     }
     default:
@@ -2707,7 +2669,8 @@ int loc_eng_agps_open(loc_eng_data_s_type &loc_eng_data, AGpsExtType agpsType,
 
     int apn_len = smaller_of(strlen(apn), MAX_APN_LEN);
     loc_eng_data.adapter->sendMsg(
-        new LocEngAtlOpenSuccess(sm, apn, apn_len, bearerType));
+        new LocEngAtlOpenSuccess(&loc_eng_data, agpsType,
+                                 apn, apn_len, bearerType));
 
     EXIT_LOG(% d, 0);
     return 0;
@@ -2736,8 +2699,8 @@ int loc_eng_agps_closed(loc_eng_data_s_type &loc_eng_data, AGpsExtType agpsType)
     INIT_CHECK(loc_eng_data.adapter && loc_eng_data.agps_status_cb,
                return -1);
 
-    AgpsStateMachine* sm = getAgpsStateMachine(loc_eng_data, agpsType);
-    loc_eng_data.adapter->sendMsg(new LocEngAtlClosed(sm));
+    loc_eng_data.adapter->sendMsg(new LocEngAtlClosed(&loc_eng_data,
+                                                      agpsType));
 
     EXIT_LOG(% d, 0);
     return 0;
@@ -2766,8 +2729,8 @@ int loc_eng_agps_open_failed(loc_eng_data_s_type &loc_eng_data, AGpsExtType agps
     INIT_CHECK(loc_eng_data.adapter && loc_eng_data.agps_status_cb,
                return -1);
 
-    AgpsStateMachine* sm = getAgpsStateMachine(loc_eng_data, agpsType);
-    loc_eng_data.adapter->sendMsg(new LocEngAtlOpenFailed(sm));
+    loc_eng_data.adapter->sendMsg(new LocEngAtlOpenFailed(&loc_eng_data,
+                                                          agpsType));
 
     EXIT_LOG(% d, 0);
     return 0;
@@ -3070,12 +3033,17 @@ void loc_eng_configuration_update(loc_eng_data_s_type &loc_eng_data,
             {
                 adapter->sendMsg(new LocEngSuplMode(adapter->getUlpProxy()));
             }
+            // we always update lock mask, this is because if this is dsds device, we would not
+            // know if modem has switched dds, if so, lock mask may also need to be updated.
+            // if we have power vote, HAL is on, lock mask 0; else gps_conf.GPS_LOCK.
+            adapter->setGpsLockMsg(adapter->getPowerVote() ? 0 : gps_conf.GPS_LOCK);
         }
 
         gps_conf_tmp.SUPL_VER = gps_conf.SUPL_VER;
         gps_conf_tmp.LPP_PROFILE = gps_conf.LPP_PROFILE;
         gps_conf_tmp.A_GLONASS_POS_PROTOCOL_SELECT = gps_conf.A_GLONASS_POS_PROTOCOL_SELECT;
         gps_conf_tmp.SUPL_MODE = gps_conf.SUPL_MODE;
+        gps_conf_tmp.SUPL_ES = gps_conf.SUPL_ES;
         gps_conf_tmp.GPS_LOCK = gps_conf.GPS_LOCK;
         gps_conf_tmp.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL =
             gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL;
@@ -3290,8 +3258,8 @@ int loc_eng_gps_measurement_init(loc_eng_data_s_type &loc_eng_data,
 {
     ENTRY_LOG_CALLFLOW();
 
-    STATE_CHECK((NULL == loc_eng_data.gps_measurement_cb),
-                "gps measurement already initialized",
+    STATE_CHECK((NULL == loc_eng_data.gnss_measurement_cb),
+                "gnss measurement already initialized",
                 return GPS_MEASUREMENT_ERROR_ALREADY_INIT);
     STATE_CHECK((callbacks != NULL),
                 "callbacks can not be NULL",

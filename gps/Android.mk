@@ -13,4 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include $(call all-subdir-makefiles)
+LOCAL_PATH := $(call my-dir)
+
+include $(call all-subdir-makefiles,$(LOCAL_PATH))

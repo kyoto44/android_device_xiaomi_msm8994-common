@@ -50,9 +50,6 @@ protected:
     {
         delete mLocAdapterBase;
     }
-    ContextBase* getContext() const {
-        return mLocAdapterBase->getContext();
-    }
     inline void updateEvtMask(LOC_API_ADAPTER_EVENT_MASK_T event,
                               loc_registration_mask_status isEnabled)
     {

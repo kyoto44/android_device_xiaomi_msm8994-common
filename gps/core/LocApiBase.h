@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, 2016 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -88,6 +88,7 @@ class LocApiBase
     ContextBase *mContext;
     LocAdapterBase *mLocAdapters[MAX_ADAPTERS];
     uint64_t mSupportedMsg;
+    uint8_t mFeaturesSupported[MAX_FEATURE_LENGTH];
 
 protected:
     virtual enum loc_api_adapter_err
@@ -138,7 +139,8 @@ public:
     void reportDataCallClosed();
     void requestNiNotify(GpsNiNotification &notify, const void *data);
     void saveSupportedMsgList(uint64_t supportedMsgList);
-    void reportGpsMeasurementData(GpsData &gpsMeasurementData);
+    void reportGnssMeasurementData(GnssData &gnssMeasurementData);
+    void saveSupportedFeatureList(uint8_t *featureList);
 
     // downward calls
     // All below functions are to be defined by adapter specific modules:
@@ -271,6 +273,11 @@ public:
       Check if the modem support the service
      */
     virtual bool gnssConstellationConfig();
+
+    /*
+       Check if a feature is supported
+      */
+    bool isFeatureSupported(uint8_t featureVal);
 };
 
 typedef LocApiBase *(getLocApi_t)(const MsgTask *msgTask,

@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2012, 2015, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -59,7 +59,7 @@ loc_logger_s_type loc_logger;
 /* Get names from value */
 const char *loc_get_name_from_mask(const loc_name_val_s_type table[], size_t table_size, long mask)
 {
-   int i;
+   size_t i;
    for (i = 0; i < table_size; i++)
    {
       if (table[i].val & (long)mask)
@@ -73,7 +73,7 @@ const char *loc_get_name_from_mask(const loc_name_val_s_type table[], size_t tab
 /* Get names from value */
 const char *loc_get_name_from_val(const loc_name_val_s_type table[], size_t table_size, long value)
 {
-   int i;
+   size_t i;
    for (i = 0; i < table_size; i++)
    {
       if (table[i].val == (long)value)
@@ -116,7 +116,7 @@ static const loc_name_val_s_type target_name[] =
         NAME_VAL(GNSS_AUTO),
         NAME_VAL(GNSS_UNKNOWN)};
 
-static int target_name_num = sizeof(target_name)/sizeof(loc_name_val_s_type);
+static const size_t target_name_num = LOC_TABLE_SIZE(target_name);
 
 /*===========================================================================
 
@@ -167,7 +167,7 @@ RETURN VALUE
    The time string
 
 ===========================================================================*/
-char *loc_get_time(char *time_string, unsigned long buf_size)
+char *loc_get_time(char *time_string, size_t buf_size)
 {
    struct timeval now;  /* sec and usec     */
    struct tm now_tm;    /* broken-down time */

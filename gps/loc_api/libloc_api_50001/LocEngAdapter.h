@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2016, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -57,7 +57,7 @@ public:
                                 void *locationExt,
                                 enum loc_sess_status status,
                                 LocPosTechMask loc_technology_mask);
-    virtual void reportSv(HaxxSvStatus &svStatus,
+    virtual void reportSv(GnssSvStatus &svStatus,
                           GpsLocationExtended &locationExtended,
                           void *svExt);
     virtual void reportStatus(GpsStatusValue status);
@@ -88,6 +88,7 @@ public:
     bool mSupportsAgpsRequests;
     bool mSupportsPositionInjection;
     bool mSupportsTimeInjection;
+    GnssSystemInfo mGnssInfo;
 
     LocEngAdapter(LOC_API_ADAPTER_EVENT_MASK_T mask,
                   void *owner, ContextBase *context,
@@ -240,12 +241,12 @@ public:
     inline virtual enum loc_api_adapter_err
     setAGLONASSProtocol(unsigned long aGlonassProtocol)
     {
-        return mLocApi->setExtPowerConfig(isBatteryCharging);
+        return mLocApi->setAGLONASSProtocol(aGlonassProtocol);
     }
     inline virtual enum loc_api_adapter_err
     setLPPeProtocol(unsigned long lppeCP, unsigned long lppeUP)
     {
-        return mLocApi->setAGLONASSProtocol(aGlonassProtocol);
+        return mLocApi->setLPPeProtocol(lppeCP, lppeUP);
     }
     inline virtual int initDataServiceClient()
     {
@@ -285,7 +286,7 @@ public:
                                 void *locationExt,
                                 enum loc_sess_status status,
                                 LocPosTechMask loc_technology_mask);
-    virtual void reportSv(HaxxSvStatus &svStatus,
+    virtual void reportSv(GnssSvStatus &svStatus,
                           GpsLocationExtended &locationExtended,
                           void *svExt);
     virtual void reportStatus(GpsStatusValue status);
@@ -300,7 +301,7 @@ public:
     virtual bool requestSuplES(int connHandle);
     virtual bool reportDataCallOpened();
     virtual bool reportDataCallClosed();
-    virtual void reportGpsMeasurementData(GpsData &gpsMeasurementData);
+    virtual void reportGnssMeasurementData(GnssData &gnssMeasurementData);
 
     inline const LocPosMode &getPositionMode() const
     {
