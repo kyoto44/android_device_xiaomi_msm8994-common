@@ -30,11 +30,10 @@
 #define _LOC_MISC_UTILS_H_
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-    /*===========================================================================
+/*===========================================================================
 FUNCTION loc_split_string
 
 DESCRIPTION:
@@ -74,10 +73,10 @@ EXAMPLE
     split_strings_ptr[2] = &raw_string[a]; //split_strings_ptr[2] contains "user"
 
 ===========================================================================*/
-    int loc_util_split_string(char *raw_string, char **split_strings_ptr, int max_num_substrings,
-                              char delimiter);
+int loc_util_split_string(char *raw_string, char **split_strings_ptr, int max_num_substrings,
+                     char delimiter);
 
-    /*===========================================================================
+/*===========================================================================
 FUNCTION trim_space
 
 DESCRIPTION
@@ -92,7 +91,7 @@ RETURN VALUE
 SIDE EFFECTS
    N/A
 ===========================================================================*/
-    void loc_util_trim_space(char *org_string);
+void loc_util_trim_space(char *org_string);
 #ifdef __cplusplus
 }
 #endif
